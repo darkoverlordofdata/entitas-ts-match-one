@@ -1,0 +1,68 @@
+{
+  "namespace": "matchone",
+  "src": "lib/src",
+  "output": {
+    "javascript": "generatedExtensions.js",
+    "typescript": "generatedComponents.ts",
+    "declaration": "entitas-matchone.d.ts"
+  },
+  "components": {
+    "Movable": false,
+    "Position": [
+      "x:number",
+      "y:number"
+    ],
+    "Destroy": false,
+    "GameBoardCache": [
+      "grid:Array<Array<Entity>>"
+    ],
+    "GameBoard": [
+      "columns:number",
+      "rows:number"
+    ],
+    "GameBoardElement": false,
+    "Input": [
+      "x:number",
+      "y:number"
+    ],
+    "Interactive": false,
+    "Resource": [
+      "name:string"
+    ],
+    "View": [
+      "sprite:Object"
+    ],
+    "Score": [
+      "value:number"
+    ]
+  },
+  "systems": {
+    "DestroySystem": true,
+    "FallSystem": true,
+    "FillSystem": true,
+    "CreateGameBoardCacheSystem": true,
+    "GameBoardSystem": true,
+    "ProcessInputSystem": true,
+    "RenderPositionSystem": true,
+    "AddViewSystem": true,
+    "RemoveViewSystem": true,
+    "ScoreSystem": true
+  },
+  "entities": {
+    "GameBoardCache": true,
+    "GameBoard": true,
+    "Score": true
+  },
+  "extensions": {
+    "Pool": {
+      "createRandomPiece:Entity": [
+        "x:number",
+        "y:number"
+      ],
+      "createBlocker:Entity": [
+        "x:number",
+        "y:number"
+      ]
+    }
+  }
+}

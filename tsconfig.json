@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "removeComments": false,
+    "preserveConstEnums": false,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "outDir": "web/src/matchone"
+  },
+  "files": [
+    "lib/ext/pixi.js.d.ts",
+    "lib/ext/entitas-matchone.d.ts",
+    "lib/src/generatedComponents.ts",
+    "lib/src/extensions/Pool.ts",
+    "lib/src/Constants.ts",
+    "lib/src/utils/Input.ts",
+    "lib/src/systems/AddViewSystem.ts",
+    "lib/src/systems/CreateGameBoardCacheSystem.ts",
+    "lib/src/systems/DestroySystem.ts",
+    "lib/src/systems/FallSystem.ts",
+    "lib/src/systems/FillSystem.ts",
+    "lib/src/systems/GameBoardSystem.ts",
+    "lib/src/systems/ProcessInputSystem.ts",
+    "lib/src/systems/RemoveViewSystem.ts",
+    "lib/src/systems/RenderPositionSystem.ts",
+    "lib/src/systems/ScoreSystem.ts",
+    "lib/src/controllers/GameController.ts",
+    "lib/src/controllers/InputController.ts",
+    "lib/src/controllers/ScoreLabelController.ts",
+    "lib/src/Game.ts"
+  ]
+}
