@@ -2,7 +2,7 @@ module matchone {
 
   declare var viewContainer;
 
-  import Input = matchone.utils.Input;
+  import Input = bosco.utils.Input;
 
   export class InputController {
 

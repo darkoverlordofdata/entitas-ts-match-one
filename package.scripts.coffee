@@ -22,7 +22,7 @@ BabelScript     = 4   # es6
 ClosureCompiler = 8   # plovr
 
 # paths:
-LIB_NAME        = "speedracer"
+LIB_NAME        = "matchone"
 PLOVR           = "tools/plovr.jar"
 COMPILER_JAR    = "packages/closure-compiler/lib/vendor/compiler.jar"
 LIB_ASH         = "packages/ash.coffee/goog/lib"

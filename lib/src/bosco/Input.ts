@@ -1,9 +1,6 @@
-module matchone.utils {
+module bosco.utils {
 
   declare var viewContainer;
-
-  import Pools = matchone.Pools;
-  import Systems = entitas.Systems;
 
   export class Input {
 
