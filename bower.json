@@ -22,9 +22,11 @@
     "google-closure-library": "*"
   },
   "dependencies": {
+    "bosco": "git://github.com/darkoverlordofdata/bosco",
     "entitas": "git://github.com/darkoverlordofdata/entitas-ts",
     "pixi.js": "~3.0.8",
-    "stats.js": "*"
+    "stats.js": "*",
+    "tween.ts": "~0.1.2"
   },
   "install": {
     "ignore": [
@@ -33,9 +35,11 @@
     ],
     "path": "web/src",
     "sources": {
+      "bosco": "packages/bosco/build/bosco.js",
       "entitas": "packages/entitas/build/entitas.min.js",
       "stats.js": "packages/stats.js/build/stats.min.js",
-      "pixi.js": "packages/pixi.js/bin/pixi.min.js"
+      "pixi.js": "packages/pixi.js/bin/pixi.min.js",
+      "tween.ts": "packages/tween.ts/build/tween.min.js"
     }
   }
 }

@@ -1,28 +1,51 @@
-//matchone.Game.main();
-bosco.Game.main({
+/**
+ *
+ *     __  __         ___                            ___  ___
+ *    / /_/ /  ___   / _ \___ _    _____ ____  ___  / _/ / _ )___  ___ _______
+ *   / __/ _ \/ -_) / ___/ _ \ |/|/ / -_) __/ / _ \/ _/ / _  / _ \(_-</ __/ _ \
+ *   \__/_//_/\__/ /_/   \___/__,__/\__/_/    \___/_/  /____/\___/___/\__/\___/
+ *
+ *
+ *
+ */
+bosco.start({
     "namespace": "matchone",
-    "width": false,
-    "height": false,
-    "scaleType": 0,
+    "width": 640,
+    "height": 640,
+    "scale": false,
+    "scaleType": "FILL",
+    "stats": true,
+    "storage": false,
     "options": {
-        "backgroundColor": "0x3c3c3c"
+        "antialiasing": false,
+        "transparent": false,
+        "resolution": window.devicePixelRatio,
+        "autoResize": true, "backgroundColor": "0x3c3c3c"
     },
     "assets": {
-        "Blocker": "res/images.json"
+        "images": (window.devicePixelRatio >= 2) ? "res/images@2x.json" : "res/images.json"
     },
     "resources": {
-        "Blocker" : {"path": "Blocker.png", "scale": {"x":0.5, "y":0.5}},
-        "Piece0"  : {"path": "Piece0.png", "scale": {"x":0.5, "y":0.5}},
-        "Piece1"  : {"path": "Piece1.png", "scale": {"x":0.5, "y":0.5}},
-        "Piece2"  : {"path": "Piece2.png", "scale": {"x":0.5, "y":0.5}},
-        "Piece3"  : {"path": "Piece3.png", "scale": {"x":0.5, "y":0.5}},
-        "Piece4"  : {"path": "Piece4.png", "scale": {"x":0.5, "y":0.5}},
-        "Piece5"  : {"path": "Piece5.png", "scale": {"x":0.5, "y":0.5}}
+        "Blocker" : {"path": "Blocker.png"},
+        "Piece0"  : {"path": "Piece0.png"},
+        "Piece1"  : {"path": "Piece1.png"},
+        "Piece2"  : {"path": "Piece2.png"},
+        "Piece3"  : {"path": "Piece3.png"},
+        "Piece4"  : {"path": "Piece4.png"},
+        "Piece5"  : {"path": "Piece5.png"}
     },
     "controllers": [
         "GameController",
         "InputController",
         "ScoreLabelController"
-    ]
+    ],
+    "properties": {
+        "skip": "false",
+        "leaderboard": "off",
+        "player": "",
+        "userId": "",
+        "playMusic": "true",
+        "playSfx": "true"
+    }
 });
 

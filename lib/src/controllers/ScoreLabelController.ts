@@ -14,8 +14,8 @@ module matchone {
 
     start() {
 
-      this.label = new Text('Score', {font:'bold 40px Arial', fill:'white'});
-      this.label.position.set((9*64-this.label.width)/2, 10);
+      this.label = new Text('Score', {font:'bold 50px Arial', fill:'white'});
+      this.label.position.set((bosco.config.width-this.label.width)/2, 10);
       viewContainer.addChild(this.label);
       var pool = Pools.pool;
       pool.getGroup(Matcher.Score).onEntityAdded.add((group, entity, index, component) => {

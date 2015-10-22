@@ -38,6 +38,7 @@
             padding:0;
             margin: 0;
             background: #000;
+            overflow: hidden;
         }
         body, canvas, div {
             -moz-user-select: none;
@@ -51,40 +52,13 @@
 <body></body>
 <script src="src/stats.js/stats.min.js"></script>
 <script src="src/pixi.js/pixi.min.js"></script>
-<!--<script src="src/entitas/entitas.min.js"></script>-->
-<script src="src/entitas/utils/Exceptions.js"></script>
-<script src="src/entitas/utils/Signal.js"></script>
-<script src="src/entitas/interfaces/IComponent.js"></script>
-<script src="src/entitas/interfaces/IMatcher.js"></script>
-<script src="src/entitas/interfaces/ISystem.js"></script>
-<script src="src/entitas/interfaces/IExecuteSystem.js"></script>
-<script src="src/entitas/interfaces/IInitializeSystem.js"></script>
-<script src="src/entitas/interfaces/IReactiveSystem.js"></script>
-<script src="src/entitas/matcher/Matcher.js"></script>
-<script src="src/entitas/matcher/MatcherInterfaces.js"></script>
-<script src="src/entitas/matcher/TriggerOnEvent.js"></script>
-<script src="src/entitas/Entity.js"></script>
-<script src="src/entitas/Group.js"></script>
-<script src="src/entitas/GroupObserver.js"></script>
-<script src="src/entitas/Pool.js"></script>
-<script src="src/entitas/ReactiveSystem.js"></script>
-<script src="src/entitas/Systems.js"></script>
-<script src="src/entitas/extensions/CollectionExtension.js"></script>
-<script src="src/entitas/extensions/GroupExtension.js"></script>
-<script src="src/entitas/extensions/MatcherExtension.js"></script>
-<script src="src/entitas/extensions/PoolExtension.js"></script>
-
-<script src="src/matchone/bosco/Input.js"></script>
-<script src="src/matchone/bosco/MathUtils.js"></script>
-<script src="src/matchone/bosco/TrigLUT.js"></script>
-<script src="src/matchone/bosco/Utils.js"></script>
-<script src="src/matchone/bosco/Bosco.js"></script>
-
+<script src="src/tween.ts/tween.min.js"></script>
+<script src="src/entitas/entitas.min.js"></script>
+<script src="src/bosco/bosco.js"></script>
 
 <script src="src/matchone/extensions/Pool.js"></script>
 <script src="src/matchone/generatedComponents.js"></script>
 <script src="src/matchone/generatedExtensions.js"></script>
-<!--<script src="src/matchone/Constants.js"></script>-->
 <script src="src/matchone/systems/AddViewSystem.js"></script>
 <script src="src/matchone/systems/CreateGameBoardCacheSystem.js"></script>
 <script src="src/matchone/systems/DestroySystem.js"></script>

@@ -14,1249 +14,538 @@ strength:{type:"1f",value:1},dirX:{type:"1f",value:t||0},dirY:{type:"1f",value:e
 sepia:{type:"1f",value:1}})}var n=t("../../core");i.prototype=Object.create(n.AbstractFilter.prototype),i.prototype.constructor=i,e.exports=i,Object.defineProperties(i.prototype,{sepia:{get:function(){return this.uniforms.sepia.value},set:function(t){this.uniforms.sepia.value=t}}})},{"../../core":20}],99:[function(t,e,r){function i(){n.AbstractFilter.call(this,null,"precision lowp float;\n\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\n\nuniform vec2 center;\nuniform vec3 params; // 10.0, 0.8, 0.1\nuniform float time;\n\nvoid main()\n{\n    vec2 uv = vTextureCoord;\n    vec2 texCoord = uv;\n\n    float dist = distance(uv, center);\n\n    if ( (dist <= (time + params.z)) && (dist >= (time - params.z)) )\n    {\n        float diff = (dist - time);\n        float powDiff = 1.0 - pow(abs(diff*params.x), params.y);\n\n        float diffTime = diff  * powDiff;\n        vec2 diffUV = normalize(uv - center);\n        texCoord = uv + (diffUV * diffTime);\n    }\n\n    gl_FragColor = texture2D(uSampler, texCoord);\n}\n",{center:{type:"v2",value:{x:.5,y:.5}},params:{type:"v3",value:{x:10,y:.8,z:.1}},time:{type:"1f",value:0}})}var n=t("../../core");i.prototype=Object.create(n.AbstractFilter.prototype),i.prototype.constructor=i,e.exports=i,Object.defineProperties(i.prototype,{center:{get:function(){return this.uniforms.center.value},set:function(t){this.uniforms.center.value=t}},params:{get:function(){return this.uniforms.params.value},set:function(t){this.uniforms.params.value=t}},time:{get:function(){return this.uniforms.time.value},set:function(t){this.uniforms.time.value=t}}})},{"../../core":20}],100:[function(t,e,r){function i(){n.AbstractFilter.call(this,null,"precision mediump float;\n\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform float blur;\nuniform float gradientBlur;\nuniform vec2 start;\nuniform vec2 end;\nuniform vec2 delta;\nuniform vec2 texSize;\n\nfloat random(vec3 scale, float seed)\n{\n    return fract(sin(dot(gl_FragCoord.xyz + seed, scale)) * 43758.5453 + seed);\n}\n\nvoid main(void)\n{\n    vec4 color = vec4(0.0);\n    float total = 0.0;\n\n    float offset = random(vec3(12.9898, 78.233, 151.7182), 0.0);\n    vec2 normal = normalize(vec2(start.y - end.y, end.x - start.x));\n    float radius = smoothstep(0.0, 1.0, abs(dot(vTextureCoord * texSize - start, normal)) / gradientBlur) * blur;\n\n    for (float t = -30.0; t <= 30.0; t++)\n    {\n        float percent = (t + offset - 0.5) / 30.0;\n        float weight = 1.0 - abs(percent);\n        vec4 sample = texture2D(uSampler, vTextureCoord + delta / texSize * percent * radius);\n        sample.rgb *= sample.a;\n        color += sample * weight;\n        total += weight;\n    }\n\n    gl_FragColor = color / total;\n    gl_FragColor.rgb /= gl_FragColor.a + 0.00001;\n}\n",{blur:{type:"1f",value:100},gradientBlur:{type:"1f",value:600},start:{type:"v2",value:{x:0,y:window.innerHeight/2}},end:{type:"v2",value:{x:600,y:window.innerHeight/2}},delta:{type:"v2",value:{x:30,y:30}},texSize:{type:"v2",value:{x:window.innerWidth,y:window.innerHeight}}}),this.updateDelta()}var n=t("../../core");i.prototype=Object.create(n.AbstractFilter.prototype),i.prototype.constructor=i,e.exports=i,i.prototype.updateDelta=function(){this.uniforms.delta.value.x=0,this.uniforms.delta.value.y=0},Object.defineProperties(i.prototype,{blur:{get:function(){return this.uniforms.blur.value},set:function(t){this.uniforms.blur.value=t}},gradientBlur:{get:function(){return this.uniforms.gradientBlur.value},set:function(t){this.uniforms.gradientBlur.value=t}},start:{get:function(){return this.uniforms.start.value},set:function(t){this.uniforms.start.value=t,this.updateDelta()}},end:{get:function(){return this.uniforms.end.value},set:function(t){this.uniforms.end.value=t,this.updateDelta()}}})},{"../../core":20}],101:[function(t,e,r){function i(){n.AbstractFilter.call(this),this.tiltShiftXFilter=new o,this.tiltShiftYFilter=new s}var n=t("../../core"),o=t("./TiltShiftXFilter"),s=t("./TiltShiftYFilter");i.prototype=Object.create(n.AbstractFilter.prototype),i.prototype.constructor=i,e.exports=i,i.prototype.applyFilter=function(t,e,r){var i=t.filterManager.getRenderTarget(!0);this.tiltShiftXFilter.applyFilter(t,e,i),this.tiltShiftYFilter.applyFilter(t,i,r),t.filterManager.returnRenderTarget(i)},Object.defineProperties(i.prototype,{blur:{get:function(){return this.tiltShiftXFilter.blur},set:function(t){this.tiltShiftXFilter.blur=this.tiltShiftYFilter.blur=t}},gradientBlur:{get:function(){return this.tiltShiftXFilter.gradientBlur},set:function(t){this.tiltShiftXFilter.gradientBlur=this.tiltShiftYFilter.gradientBlur=t}},start:{get:function(){return this.tiltShiftXFilter.start},set:function(t){this.tiltShiftXFilter.start=this.tiltShiftYFilter.start=t}},end:{get:function(){return this.tiltShiftXFilter.end},set:function(t){this.tiltShiftXFilter.end=this.tiltShiftYFilter.end=t}}})},{"../../core":20,"./TiltShiftXFilter":102,"./TiltShiftYFilter":103}],102:[function(t,e,r){function i(){n.call(this)}var n=t("./TiltShiftAxisFilter");i.prototype=Object.create(n.prototype),i.prototype.constructor=i,e.exports=i,i.prototype.updateDelta=function(){var t=this.uniforms.end.value.x-this.uniforms.start.value.x,e=this.uniforms.end.value.y-this.uniforms.start.value.y,r=Math.sqrt(t*t+e*e);this.uniforms.delta.value.x=t/r,this.uniforms.delta.value.y=e/r}},{"./TiltShiftAxisFilter":100}],103:[function(t,e,r){function i(){n.call(this)}var n=t("./TiltShiftAxisFilter");i.prototype=Object.create(n.prototype),i.prototype.constructor=i,e.exports=i,i.prototype.updateDelta=function(){var t=this.uniforms.end.value.x-this.uniforms.start.value.x,e=this.uniforms.end.value.y-this.uniforms.start.value.y,r=Math.sqrt(t*t+e*e);this.uniforms.delta.value.x=-e/r,this.uniforms.delta.value.y=t/r}},{"./TiltShiftAxisFilter":100}],104:[function(t,e,r){function i(){n.AbstractFilter.call(this,null,"precision mediump float;\n\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform float radius;\nuniform float angle;\nuniform vec2 offset;\n\nvoid main(void)\n{\n   vec2 coord = vTextureCoord - offset;\n   float dist = length(coord);\n\n   if (dist < radius)\n   {\n       float ratio = (radius - dist) / radius;\n       float angleMod = ratio * ratio * angle;\n       float s = sin(angleMod);\n       float c = cos(angleMod);\n       coord = vec2(coord.x * c - coord.y * s, coord.x * s + coord.y * c);\n   }\n\n   gl_FragColor = texture2D(uSampler, coord+offset);\n}\n",{radius:{type:"1f",value:.5},angle:{type:"1f",value:5},offset:{type:"v2",value:{x:.5,y:.5}}})}var n=t("../../core");i.prototype=Object.create(n.AbstractFilter.prototype),i.prototype.constructor=i,e.exports=i,Object.defineProperties(i.prototype,{offset:{get:function(){return this.uniforms.offset.value},set:function(t){this.uniforms.offset.value=t}},radius:{get:function(){return this.uniforms.radius.value},set:function(t){this.uniforms.radius.value=t}},angle:{get:function(){return this.uniforms.angle.value},set:function(t){this.uniforms.angle.value=t}}})},{"../../core":20}],105:[function(t,e,r){(function(r){t("./polyfill");var i=e.exports=t("./core");i.extras=t("./extras"),i.filters=t("./filters"),i.interaction=t("./interaction"),i.loaders=t("./loaders"),i.mesh=t("./mesh"),i.loader=new i.loaders.Loader,Object.assign(i,t("./deprecation")),r.PIXI=i}).call(this,"undefined"!=typeof global?global:"undefined"!=typeof self?self:"undefined"!=typeof window?window:{})},{"./core":20,"./deprecation":69,"./extras":76,"./filters":93,"./interaction":108,"./loaders":111,"./mesh":117,"./polyfill":122}],106:[function(t,e,r){function i(){this.global=new n.Point,this.target=null,this.originalEvent=null}var n=t("../core");i.prototype.constructor=i,e.exports=i,i.prototype.getLocalPosition=function(t,e,r){return t.toLocal(r?r:this.global,e)}},{"../core":20}],107:[function(t,e,r){function i(t,e){e=e||{},this.renderer=t,this.autoPreventDefault=void 0!==e.autoPreventDefault?e.autoPreventDefault:!0,this.interactionFrequency=e.interactionFrequency||10,this.mouse=new o,this.eventData={stopped:!1,target:null,type:null,data:this.mouse,stopPropagation:function(){this.stopped=!0}},this.interactiveDataPool=[],this.interactionDOMElement=null,this.eventsAdded=!1,this.onMouseUp=this.onMouseUp.bind(this),this.processMouseUp=this.processMouseUp.bind(this),this.onMouseDown=this.onMouseDown.bind(this),this.processMouseDown=this.processMouseDown.bind(this),this.onMouseMove=this.onMouseMove.bind(this),this.processMouseMove=this.processMouseMove.bind(this),this.onMouseOut=this.onMouseOut.bind(this),this.processMouseOverOut=this.processMouseOverOut.bind(this),this.onTouchStart=this.onTouchStart.bind(this),this.processTouchStart=this.processTouchStart.bind(this),this.onTouchEnd=this.onTouchEnd.bind(this),this.processTouchEnd=this.processTouchEnd.bind(this),this.onTouchMove=this.onTouchMove.bind(this),this.processTouchMove=this.processTouchMove.bind(this),this.last=0,this.currentCursorStyle="inherit",this._tempPoint=new n.Point,this.resolution=1,this.setTargetElement(this.renderer.view,this.renderer.resolution)}var n=t("../core"),o=t("./InteractionData");Object.assign(n.DisplayObject.prototype,t("./interactiveTarget")),i.prototype.constructor=i,e.exports=i,i.prototype.setTargetElement=function(t,e){this.removeEvents(),this.interactionDOMElement=t,this.resolution=e||1,this.addEvents()},i.prototype.addEvents=function(){this.interactionDOMElement&&(n.ticker.shared.add(this.update,this),window.navigator.msPointerEnabled&&(this.interactionDOMElement.style["-ms-content-zooming"]="none",this.interactionDOMElement.style["-ms-touch-action"]="none"),window.document.addEventListener("mousemove",this.onMouseMove,!0),this.interactionDOMElement.addEventListener("mousedown",this.onMouseDown,!0),this.interactionDOMElement.addEventListener("mouseout",this.onMouseOut,!0),this.interactionDOMElement.addEventListener("touchstart",this.onTouchStart,!0),this.interactionDOMElement.addEventListener("touchend",this.onTouchEnd,!0),this.interactionDOMElement.addEventListener("touchmove",this.onTouchMove,!0),window.addEventListener("mouseup",this.onMouseUp,!0),this.eventsAdded=!0)},i.prototype.removeEvents=function(){this.interactionDOMElement&&(n.ticker.shared.remove(this.update),window.navigator.msPointerEnabled&&(this.interactionDOMElement.style["-ms-content-zooming"]="",this.interactionDOMElement.style["-ms-touch-action"]=""),window.document.removeEventListener("mousemove",this.onMouseMove,!0),this.interactionDOMElement.removeEventListener("mousedown",this.onMouseDown,!0),this.interactionDOMElement.removeEventListener("mouseout",this.onMouseOut,!0),this.interactionDOMElement.removeEventListener("touchstart",this.onTouchStart,!0),this.interactionDOMElement.removeEventListener("touchend",this.onTouchEnd,!0),this.interactionDOMElement.removeEventListener("touchmove",this.onTouchMove,!0),this.interactionDOMElement=null,window.removeEventListener("mouseup",this.onMouseUp,!0),this.eventsAdded=!1)},i.prototype.update=function(t){if(this._deltaTime+=t,!(this._deltaTime<this.interactionFrequency)&&(this._deltaTime=0,this.interactionDOMElement)){if(this.didMove)return void(this.didMove=!1);this.cursor="inherit",this.processInteractive(this.mouse.global,this.renderer._lastObjectRendered,this.processMouseOverOut,!0),this.currentCursorStyle!==this.cursor&&(this.currentCursorStyle=this.cursor,this.interactionDOMElement.style.cursor=this.cursor)}},i.prototype.dispatchEvent=function(t,e,r){r.stopped||(r.target=t,r.type=e,t.emit(e,r),t[e]&&t[e](r))},i.prototype.mapPositionToPoint=function(t,e,r){var i=this.interactionDOMElement.getBoundingClientRect();t.x=(e-i.left)*(this.interactionDOMElement.width/i.width)/this.resolution,t.y=(r-i.top)*(this.interactionDOMElement.height/i.height)/this.resolution},i.prototype.processInteractive=function(t,e,r,i,n){if(!e||!e.visible)return!1;var o=e.children,s=!1;if(n=n||e.interactive,e.interactiveChildren)for(var a=o.length-1;a>=0;a--)!s&&i?s=this.processInteractive(t,o[a],r,!0,n):this.processInteractive(t,o[a],r,!1,!1);return n&&(i&&(e.hitArea?(e.worldTransform.applyInverse(t,this._tempPoint),s=e.hitArea.contains(this._tempPoint.x,this._tempPoint.y)):e.containsPoint&&(s=e.containsPoint(t))),e.interactive&&r(e,s)),s},i.prototype.onMouseDown=function(t){this.mouse.originalEvent=t,this.eventData.data=this.mouse,this.eventData.stopped=!1,this.mapPositionToPoint(this.mouse.global,t.clientX,t.clientY),this.autoPreventDefault&&this.mouse.originalEvent.preventDefault(),this.processInteractive(this.mouse.global,this.renderer._lastObjectRendered,this.processMouseDown,!0)},i.prototype.processMouseDown=function(t,e){var r=this.mouse.originalEvent,i=2===r.button||3===r.which;e&&(t[i?"_isRightDown":"_isLeftDown"]=!0,this.dispatchEvent(t,i?"rightdown":"mousedown",this.eventData))},i.prototype.onMouseUp=function(t){this.mouse.originalEvent=t,this.eventData.data=this.mouse,this.eventData.stopped=!1,this.mapPositionToPoint(this.mouse.global,t.clientX,t.clientY),this.processInteractive(this.mouse.global,this.renderer._lastObjectRendered,this.processMouseUp,!0)},i.prototype.processMouseUp=function(t,e){var r=this.mouse.originalEvent,i=2===r.button||3===r.which,n=i?"_isRightDown":"_isLeftDown";e?(this.dispatchEvent(t,i?"rightup":"mouseup",this.eventData),t[n]&&(t[n]=!1,this.dispatchEvent(t,i?"rightclick":"click",this.eventData))):t[n]&&(t[n]=!1,this.dispatchEvent(t,i?"rightupoutside":"mouseupoutside",this.eventData))},i.prototype.onMouseMove=function(t){this.mouse.originalEvent=t,this.eventData.data=this.mouse,this.eventData.stopped=!1,this.mapPositionToPoint(this.mouse.global,t.clientX,t.clientY),this.didMove=!0,this.cursor="inherit",this.processInteractive(this.mouse.global,this.renderer._lastObjectRendered,this.processMouseMove,!0),this.currentCursorStyle!==this.cursor&&(this.currentCursorStyle=this.cursor,this.interactionDOMElement.style.cursor=this.cursor)},i.prototype.processMouseMove=function(t,e){this.dispatchEvent(t,"mousemove",this.eventData),this.processMouseOverOut(t,e)},i.prototype.onMouseOut=function(t){this.mouse.originalEvent=t,this.eventData.stopped=!1,this.mapPositionToPoint(this.mouse.global,t.clientX,t.clientY),this.interactionDOMElement.style.cursor="inherit",this.mapPositionToPoint(this.mouse.global,t.clientX,t.clientY),this.processInteractive(this.mouse.global,this.renderer._lastObjectRendered,this.processMouseOverOut,!1)},i.prototype.processMouseOverOut=function(t,e){e?(t._over||(t._over=!0,this.dispatchEvent(t,"mouseover",this.eventData)),t.buttonMode&&(this.cursor=t.defaultCursor)):t._over&&(t._over=!1,this.dispatchEvent(t,"mouseout",this.eventData))},i.prototype.onTouchStart=function(t){this.autoPreventDefault&&t.preventDefault();for(var e=t.changedTouches,r=e.length,i=0;r>i;i++){var n=e[i],o=this.getTouchData(n);o.originalEvent=t,this.eventData.data=o,this.eventData.stopped=!1,this.processInteractive(o.global,this.renderer._lastObjectRendered,this.processTouchStart,!0),this.returnTouchData(o)}},i.prototype.processTouchStart=function(t,e){e&&(t._touchDown=!0,this.dispatchEvent(t,"touchstart",this.eventData))},i.prototype.onTouchEnd=function(t){this.autoPreventDefault&&t.preventDefault();for(var e=t.changedTouches,r=e.length,i=0;r>i;i++){var n=e[i],o=this.getTouchData(n);o.originalEvent=t,this.eventData.data=o,this.eventData.stopped=!1,this.processInteractive(o.global,this.renderer._lastObjectRendered,this.processTouchEnd,!0),this.returnTouchData(o)}},i.prototype.processTouchEnd=function(t,e){e?(this.dispatchEvent(t,"touchend",this.eventData),t._touchDown&&(t._touchDown=!1,this.dispatchEvent(t,"tap",this.eventData))):t._touchDown&&(t._touchDown=!1,this.dispatchEvent(t,"touchendoutside",this.eventData))},i.prototype.onTouchMove=function(t){this.autoPreventDefault&&t.preventDefault();for(var e=t.changedTouches,r=e.length,i=0;r>i;i++){var n=e[i],o=this.getTouchData(n);o.originalEvent=t,this.eventData.data=o,this.eventData.stopped=!1,this.processInteractive(o.global,this.renderer._lastObjectRendered,this.processTouchMove,!0),this.returnTouchData(o)}},i.prototype.processTouchMove=function(t,e){e=e,this.dispatchEvent(t,"touchmove",this.eventData)},i.prototype.getTouchData=function(t){var e=this.interactiveDataPool.pop();return e||(e=new o),e.identifier=t.identifier,this.mapPositionToPoint(e.global,t.clientX,t.clientY),navigator.isCocoonJS&&(e.global.x=e.global.x/this.resolution,e.global.y=e.global.y/this.resolution),t.globalX=e.global.x,t.globalY=e.global.y,e},i.prototype.returnTouchData=function(t){this.interactiveDataPool.push(t)},i.prototype.destroy=function(){this.removeEvents(),this.renderer=null,this.mouse=null,this.eventData=null,this.interactiveDataPool=null,this.interactionDOMElement=null,this.onMouseUp=null,this.processMouseUp=null,this.onMouseDown=null,this.processMouseDown=null,this.onMouseMove=null,this.processMouseMove=null,this.onMouseOut=null,this.processMouseOverOut=null,this.onTouchStart=null,this.processTouchStart=null,this.onTouchEnd=null,this.processTouchEnd=null,this.onTouchMove=null,this.processTouchMove=null,this._tempPoint=null},n.WebGLRenderer.registerPlugin("interaction",i),n.CanvasRenderer.registerPlugin("interaction",i)},{"../core":20,"./InteractionData":106,"./interactiveTarget":109}],108:[function(t,e,r){e.exports={InteractionData:t("./InteractionData"),InteractionManager:t("./InteractionManager"),interactiveTarget:t("./interactiveTarget")}},{"./InteractionData":106,"./InteractionManager":107,"./interactiveTarget":109}],109:[function(t,e,r){var i={interactive:!1,buttonMode:!1,interactiveChildren:!0,defaultCursor:"pointer",_over:!1,_touchDown:!1};e.exports=i},{}],110:[function(t,e,r){function i(t,e){var r={},i=t.data.getElementsByTagName("info")[0],n=t.data.getElementsByTagName("common")[0];r.font=i.getAttribute("face"),r.size=parseInt(i.getAttribute("size"),10),r.lineHeight=parseInt(n.getAttribute("lineHeight"),10),r.chars={};for(var a=t.data.getElementsByTagName("char"),h=0;h<a.length;h++){var u=parseInt(a[h].getAttribute("id"),10),l=new o.Rectangle(parseInt(a[h].getAttribute("x"),10)+e.frame.x,parseInt(a[h].getAttribute("y"),10)+e.frame.y,parseInt(a[h].getAttribute("width"),10),parseInt(a[h].getAttribute("height"),10));r.chars[u]={xOffset:parseInt(a[h].getAttribute("xoffset"),10),yOffset:parseInt(a[h].getAttribute("yoffset"),10),xAdvance:parseInt(a[h].getAttribute("xadvance"),10),kerning:{},texture:new o.Texture(e.baseTexture,l)}}var c=t.data.getElementsByTagName("kerning");for(h=0;h<c.length;h++){var p=parseInt(c[h].getAttribute("first"),10),d=parseInt(c[h].getAttribute("second"),10),f=parseInt(c[h].getAttribute("amount"),10);r.chars[d].kerning[p]=f}t.bitmapFont=r,s.BitmapText.fonts[r.font]=r}var n=t("resource-loader").Resource,o=t("../core"),s=t("../extras"),a=t("path");e.exports=function(){return function(t,e){if(!t.data||!t.isXml)return e();if(0===t.data.getElementsByTagName("page").length||0===t.data.getElementsByTagName("info").length||null===t.data.getElementsByTagName("info")[0].getAttribute("face"))return e();var r=a.dirname(t.url);"."===r&&(r=""),this.baseUrl&&r&&("/"===this.baseUrl.charAt(this.baseUrl.length-1)&&(r+="/"),r=r.replace(this.baseUrl,"")),r&&"/"!==r.charAt(r.length-1)&&(r+="/");var s=r+t.data.getElementsByTagName("page")[0].getAttribute("file");if(o.utils.TextureCache[s])i(t,o.utils.TextureCache[s]),e();else{var h={crossOrigin:t.crossOrigin,loadType:n.LOAD_TYPE.IMAGE};this.add(t.name+"_image",s,h,function(r){i(t,r.texture),e()})}}}},{"../core":20,"../extras":76,path:2,"resource-loader":129}],111:[function(t,e,r){e.exports={Loader:t("./loader"),bitmapFontParser:t("./bitmapFontParser"),spritesheetParser:t("./spritesheetParser"),textureParser:t("./textureParser"),Resource:t("resource-loader").Resource}},{"./bitmapFontParser":110,"./loader":112,"./spritesheetParser":113,"./textureParser":114,"resource-loader":129}],112:[function(t,e,r){function i(t,e){n.call(this,t,e);for(var r=0;r<i._pixiMiddleware.length;++r)this.use(i._pixiMiddleware[r]())}var n=t("resource-loader"),o=t("./textureParser"),s=t("./spritesheetParser"),a=t("./bitmapFontParser");i.prototype=Object.create(n.prototype),i.prototype.constructor=i,e.exports=i,i._pixiMiddleware=[n.middleware.parsing.blob,o,s,a],i.addPixiMiddleware=function(t){i._pixiMiddleware.push(t)};var h=n.Resource;h.setExtensionXhrType("fnt",h.XHR_RESPONSE_TYPE.DOCUMENT)},{"./bitmapFontParser":110,"./spritesheetParser":113,"./textureParser":114,"resource-loader":129}],113:[function(t,e,r){var i=t("resource-loader").Resource,n=t("path"),o=t("../core");e.exports=function(){return function(t,e){if(!t.data||!t.isJson||!t.data.frames)return e();var r={crossOrigin:t.crossOrigin,loadType:i.LOAD_TYPE.IMAGE},s=n.dirname(t.url.replace(this.baseUrl,"")),a=o.utils.getResolutionOfUrl(t.url);this.add(t.name+"_image",s+"/"+t.data.meta.image,r,function(r){t.textures={};var i=t.data.frames;for(var n in i){var s=i[n].frame;if(s){var h=null,u=null;if(h=i[n].rotated?new o.Rectangle(s.x,s.y,s.h,s.w):new o.Rectangle(s.x,s.y,s.w,s.h),i[n].trimmed&&(u=new o.Rectangle(i[n].spriteSourceSize.x/a,i[n].spriteSourceSize.y/a,i[n].sourceSize.w/a,i[n].sourceSize.h/a)),i[n].rotated){var l=h.width;h.width=h.height,h.height=l}h.x/=a,h.y/=a,h.width/=a,h.height/=a,t.textures[n]=new o.Texture(r.texture.baseTexture,h,h.clone(),u,i[n].rotated),o.utils.TextureCache[n]=t.textures[n]}}e()})}}},{"../core":20,path:2,"resource-loader":129}],114:[function(t,e,r){var i=t("../core");e.exports=function(){return function(t,e){if(t.data&&t.isImage){var r=new i.BaseTexture(t.data,null,i.utils.getResolutionOfUrl(t.url));r.imageUrl=t.url,t.texture=new i.Texture(r),i.utils.BaseTextureCache[t.url]=r,i.utils.TextureCache[t.url]=t.texture}e()}}},{"../core":20}],115:[function(t,e,r){function i(t,e,r,o,s){n.Container.call(this),this._texture=null,this.uvs=r||new Float32Array([0,1,1,1,1,0,0,1]),this.vertices=e||new Float32Array([0,0,100,0,100,100,0,100]),this.indices=o||new Uint16Array([0,1,2,3]),this.dirty=!0,this.blendMode=n.BLEND_MODES.NORMAL,this.canvasPadding=0,this.drawMode=s||i.DRAW_MODES.TRIANGLE_MESH,this.texture=t}var n=t("../core"),o=new n.Point,s=new n.Polygon;i.prototype=Object.create(n.Container.prototype),i.prototype.constructor=i,e.exports=i,Object.defineProperties(i.prototype,{texture:{get:function(){return this._texture},set:function(t){this._texture!==t&&(this._texture=t,t&&(t.baseTexture.hasLoaded?this._onTextureUpdate():t.once("update",this._onTextureUpdate,this)))}}}),i.prototype._renderWebGL=function(t){t.setObjectRenderer(t.plugins.mesh),t.plugins.mesh.render(this)},i.prototype._renderCanvas=function(t){var e=t.context,r=this.worldTransform;t.roundPixels?e.setTransform(r.a,r.b,r.c,r.d,0|r.tx,0|r.ty):e.setTransform(r.a,r.b,r.c,r.d,r.tx,r.ty),this.drawMode===i.DRAW_MODES.TRIANGLE_MESH?this._renderCanvasTriangleMesh(e):this._renderCanvasTriangles(e)},i.prototype._renderCanvasTriangleMesh=function(t){for(var e=this.vertices,r=this.uvs,i=e.length/2,n=0;i-2>n;n++){var o=2*n;this._renderCanvasDrawTriangle(t,e,r,o,o+2,o+4)}},i.prototype._renderCanvasTriangles=function(t){for(var e=this.vertices,r=this.uvs,i=this.indices,n=i.length,o=0;n>o;o+=3){var s=2*i[o],a=2*i[o+1],h=2*i[o+2];this._renderCanvasDrawTriangle(t,e,r,s,a,h)}},i.prototype._renderCanvasDrawTriangle=function(t,e,r,i,n,o){var s=this._texture.baseTexture.source,a=this._texture.baseTexture.width,h=this._texture.baseTexture.height,u=e[i],l=e[n],c=e[o],p=e[i+1],d=e[n+1],f=e[o+1],v=r[i]*a,g=r[n]*a,m=r[o]*a,y=r[i+1]*h,x=r[n+1]*h,b=r[o+1]*h;if(this.canvasPadding>0){var _=this.canvasPadding/this.worldTransform.a,T=this.canvasPadding/this.worldTransform.d,E=(u+l+c)/3,S=(p+d+f)/3,w=u-E,A=p-S,C=Math.sqrt(w*w+A*A);u=E+w/C*(C+_),p=S+A/C*(C+T),w=l-E,A=d-S,C=Math.sqrt(w*w+A*A),l=E+w/C*(C+_),d=S+A/C*(C+T),w=c-E,A=f-S,C=Math.sqrt(w*w+A*A),c=E+w/C*(C+_),f=S+A/C*(C+T)}t.save(),t.beginPath(),t.moveTo(u,p),t.lineTo(l,d),t.lineTo(c,f),t.closePath(),t.clip();var R=v*x+y*m+g*b-x*m-y*g-v*b,M=u*x+y*c+l*b-x*c-y*l-u*b,O=v*l+u*m+g*c-l*m-u*g-v*c,P=v*x*c+y*l*m+u*g*b-u*x*m-y*g*c-v*l*b,F=p*x+y*f+d*b-x*f-y*d-p*b,D=v*d+p*m+g*f-d*m-p*g-v*f,B=v*x*f+y*d*m+p*g*b-p*x*m-y*g*f-v*d*b;t.transform(M/R,F/R,O/R,D/R,P/R,B/R),t.drawImage(s,0,0),t.restore()},i.prototype.renderMeshFlat=function(t){var e=this.context,r=t.vertices,i=r.length/2;e.beginPath();for(var n=1;i-2>n;n++){var o=2*n,s=r[o],a=r[o+2],h=r[o+4],u=r[o+1],l=r[o+3],c=r[o+5];e.moveTo(s,u),e.lineTo(a,l),e.lineTo(h,c)}e.fillStyle="#FF0000",e.fill(),e.closePath()},i.prototype._onTextureUpdate=function(){this.updateFrame=!0},i.prototype.getBounds=function(t){if(!this._currentBounds){for(var e=t||this.worldTransform,r=e.a,i=e.b,o=e.c,s=e.d,a=e.tx,h=e.ty,u=-(1/0),l=-(1/0),c=1/0,p=1/0,d=this.vertices,f=0,v=d.length;v>f;f+=2){var g=d[f],m=d[f+1],y=r*g+o*m+a,x=s*m+i*g+h;c=c>y?y:c,p=p>x?x:p,u=y>u?y:u,l=x>l?x:l}if(c===-(1/0)||l===1/0)return n.Rectangle.EMPTY;var b=this._bounds;b.x=c,b.width=u-c,b.y=p,b.height=l-p,this._currentBounds=b}return this._currentBounds},i.prototype.containsPoint=function(t){if(!this.getBounds().contains(t.x,t.y))return!1;this.worldTransform.applyInverse(t,o);var e,r,n=this.vertices,a=s.points;if(this.drawMode===i.DRAW_MODES.TRIANGLES){var h=this.indices;for(r=this.indices.length,e=0;r>e;e+=3){var u=2*h[e],l=2*h[e+1],c=2*h[e+2];if(a[0]=n[u],a[1]=n[u+1],a[2]=n[l],a[3]=n[l+1],a[4]=n[c],a[5]=n[c+1],s.contains(o.x,o.y))return!0}}else for(r=n.length,e=0;r>e;e+=6)if(a[0]=n[e],a[1]=n[e+1],a[2]=n[e+2],a[3]=n[e+3],a[4]=n[e+4],a[5]=n[e+5],s.contains(o.x,o.y))return!0;return!1},i.DRAW_MODES={TRIANGLE_MESH:0,TRIANGLES:1}},{"../core":20}],116:[function(t,e,r){function i(t,e){n.call(this,t),this.points=e,this.vertices=new Float32Array(4*e.length),this.uvs=new Float32Array(4*e.length),this.colors=new Float32Array(2*e.length),this.indices=new Uint16Array(2*e.length),this._ready=!0,this.refresh()}var n=t("./Mesh"),o=t("../core");i.prototype=Object.create(n.prototype),i.prototype.constructor=i,e.exports=i,i.prototype.refresh=function(){var t=this.points;if(!(t.length<1)&&this._texture._uvs){var e=this.uvs,r=this.indices,i=this.colors,n=this._texture._uvs,s=new o.Point(n.x0,n.y0),a=new o.Point(n.x2-n.x0,n.y2-n.y0);e[0]=0+s.x,e[1]=0+s.y,e[2]=0+s.x,e[3]=1*a.y+s.y,i[0]=1,i[1]=1,r[0]=0,r[1]=1;for(var h,u,l,c=t.length,p=1;c>p;p++)h=t[p],u=4*p,l=p/(c-1),e[u]=l*a.x+s.x,e[u+1]=0+s.y,e[u+2]=l*a.x+s.x,e[u+3]=1*a.y+s.y,u=2*p,i[u]=1,i[u+1]=1,u=2*p,r[u]=u,r[u+1]=u+1;this.dirty=!0}},i.prototype._onTextureUpdate=function(){n.prototype._onTextureUpdate.call(this),this._ready&&this.refresh()},i.prototype.updateTransform=function(){var t=this.points;if(!(t.length<1)){for(var e,r,i,n,o,s,a=t[0],h=0,u=0,l=this.vertices,c=t.length,p=0;c>p;p++)r=t[p],i=4*p,e=p<t.length-1?t[p+1]:r,u=-(e.x-a.x),h=e.y-a.y,n=10*(1-p/(c-1)),n>1&&(n=1),o=Math.sqrt(h*h+u*u),s=this._texture.height/2,h/=o,u/=o,h*=s,u*=s,l[i]=r.x+h,l[i+1]=r.y+u,l[i+2]=r.x-h,l[i+3]=r.y-u,a=r;this.containerUpdateTransform()}}},{"../core":20,"./Mesh":115}],117:[function(t,e,r){e.exports={Mesh:t("./Mesh"),Rope:t("./Rope"),MeshRenderer:t("./webgl/MeshRenderer"),MeshShader:t("./webgl/MeshShader")}},{"./Mesh":115,"./Rope":116,"./webgl/MeshRenderer":118,"./webgl/MeshShader":119}],118:[function(t,e,r){function i(t){n.ObjectRenderer.call(this,t),this.indices=new Uint16Array(15e3);for(var e=0,r=0;15e3>e;e+=6,r+=4)this.indices[e+0]=r+0,this.indices[e+1]=r+1,this.indices[e+2]=r+2,this.indices[e+3]=r+0,this.indices[e+4]=r+2,this.indices[e+5]=r+3}var n=t("../../core"),o=t("../Mesh");i.prototype=Object.create(n.ObjectRenderer.prototype),i.prototype.constructor=i,e.exports=i,n.WebGLRenderer.registerPlugin("mesh",i),i.prototype.onContextChange=function(){},i.prototype.render=function(t){t._vertexBuffer||this._initWebGL(t);var e=this.renderer,r=e.gl,i=t._texture.baseTexture,n=e.shaderManager.plugins.meshShader,s=t.drawMode===o.DRAW_MODES.TRIANGLE_MESH?r.TRIANGLE_STRIP:r.TRIANGLES;e.blendModeManager.setBlendMode(t.blendMode),r.uniformMatrix3fv(n.uniforms.translationMatrix._location,!1,t.worldTransform.toArray(!0)),r.uniformMatrix3fv(n.uniforms.projectionMatrix._location,!1,e.currentRenderTarget.projectionMatrix.toArray(!0)),r.uniform1f(n.uniforms.alpha._location,t.worldAlpha),t.dirty?(t.dirty=!1,r.bindBuffer(r.ARRAY_BUFFER,t._vertexBuffer),r.bufferData(r.ARRAY_BUFFER,t.vertices,r.STATIC_DRAW),r.vertexAttribPointer(n.attributes.aVertexPosition,2,r.FLOAT,!1,0,0),r.bindBuffer(r.ARRAY_BUFFER,t._uvBuffer),r.bufferData(r.ARRAY_BUFFER,t.uvs,r.STATIC_DRAW),r.vertexAttribPointer(n.attributes.aTextureCoord,2,r.FLOAT,!1,0,0),r.activeTexture(r.TEXTURE0),i._glTextures[r.id]?r.bindTexture(r.TEXTURE_2D,i._glTextures[r.id]):this.renderer.updateTexture(i),r.bindBuffer(r.ELEMENT_ARRAY_BUFFER,t._indexBuffer),r.bufferData(r.ELEMENT_ARRAY_BUFFER,t.indices,r.STATIC_DRAW)):(r.bindBuffer(r.ARRAY_BUFFER,t._vertexBuffer),r.bufferSubData(r.ARRAY_BUFFER,0,t.vertices),r.vertexAttribPointer(n.attributes.aVertexPosition,2,r.FLOAT,!1,0,0),r.bindBuffer(r.ARRAY_BUFFER,t._uvBuffer),r.vertexAttribPointer(n.attributes.aTextureCoord,2,r.FLOAT,!1,0,0),r.activeTexture(r.TEXTURE0),i._glTextures[r.id]?r.bindTexture(r.TEXTURE_2D,i._glTextures[r.id]):this.renderer.updateTexture(i),r.bindBuffer(r.ELEMENT_ARRAY_BUFFER,t._indexBuffer),r.bufferSubData(r.ELEMENT_ARRAY_BUFFER,0,t.indices)),r.drawElements(s,t.indices.length,r.UNSIGNED_SHORT,0)},i.prototype._initWebGL=function(t){var e=this.renderer.gl;t._vertexBuffer=e.createBuffer(),t._indexBuffer=e.createBuffer(),t._uvBuffer=e.createBuffer(),e.bindBuffer(e.ARRAY_BUFFER,t._vertexBuffer),e.bufferData(e.ARRAY_BUFFER,t.vertices,e.DYNAMIC_DRAW),e.bindBuffer(e.ARRAY_BUFFER,t._uvBuffer),e.bufferData(e.ARRAY_BUFFER,t.uvs,e.STATIC_DRAW),t.colors&&(t._colorBuffer=e.createBuffer(),e.bindBuffer(e.ARRAY_BUFFER,t._colorBuffer),e.bufferData(e.ARRAY_BUFFER,t.colors,e.STATIC_DRAW)),e.bindBuffer(e.ELEMENT_ARRAY_BUFFER,t._indexBuffer),e.bufferData(e.ELEMENT_ARRAY_BUFFER,t.indices,e.STATIC_DRAW)},i.prototype.flush=function(){},i.prototype.start=function(){var t=this.renderer.shaderManager.plugins.meshShader;this.renderer.shaderManager.setShader(t)},i.prototype.destroy=function(){n.ObjectRenderer.prototype.destroy.call(this)}},{"../../core":20,"../Mesh":115}],119:[function(t,e,r){function i(t){n.Shader.call(this,t,["precision lowp float;","attribute vec2 aVertexPosition;","attribute vec2 aTextureCoord;","uniform mat3 translationMatrix;","uniform mat3 projectionMatrix;","varying vec2 vTextureCoord;","void main(void){","   gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);","   vTextureCoord = aTextureCoord;","}"].join("\n"),["precision lowp float;","varying vec2 vTextureCoord;","uniform float alpha;","uniform sampler2D uSampler;","void main(void){","   gl_FragColor = texture2D(uSampler, vTextureCoord) * alpha ;","}"].join("\n"),{alpha:{type:"1f",value:0},translationMatrix:{type:"mat3",value:new Float32Array(9)},projectionMatrix:{type:"mat3",value:new Float32Array(9)}},{aVertexPosition:0,aTextureCoord:0})}var n=t("../../core");i.prototype=Object.create(n.Shader.prototype),i.prototype.constructor=i,e.exports=i,n.ShaderManager.registerPlugin("meshShader",i)},{"../../core":20}],120:[function(t,e,r){Math.sign||(Math.sign=function(t){return t=+t,0===t||isNaN(t)?t:t>0?1:-1})},{}],121:[function(t,e,r){Object.assign||(Object.assign=t("object-assign"))},{"object-assign":11}],122:[function(t,e,r){t("./Object.assign"),t("./requestAnimationFrame"),t("./Math.sign")},{"./Math.sign":120,"./Object.assign":121,"./requestAnimationFrame":123}],123:[function(t,e,r){(function(t){if(Date.now&&Date.prototype.getTime||(Date.now=function(){return(new Date).getTime()}),!t.performance||!t.performance.now){var e=Date.now();t.performance||(t.performance={}),t.performance.now=function(){return Date.now()-e}}for(var r=Date.now(),i=["ms","moz","webkit","o"],n=0;n<i.length&&!t.requestAnimationFrame;++n)t.requestAnimationFrame=t[i[n]+"RequestAnimationFrame"],t.cancelAnimationFrame=t[i[n]+"CancelAnimationFrame"]||t[i[n]+"CancelRequestAnimationFrame"];t.requestAnimationFrame||(t.requestAnimationFrame=function(t){
 if("function"!=typeof t)throw new TypeError(t+"is not a function");var e=Date.now(),i=16+r-e;return 0>i&&(i=0),r=e,setTimeout(function(){r=Date.now(),t(performance.now())},i)}),t.cancelAnimationFrame||(t.cancelAnimationFrame=function(t){clearTimeout(t)})}).call(this,"undefined"!=typeof global?global:"undefined"!=typeof self?self:"undefined"!=typeof window?window:{})},{}],124:[function(e,r,i){(function(e){!function(){function i(t){var e=!1;return function(){if(e)throw new Error("Callback was already called.");e=!0,t.apply(n,arguments)}}var n,o,s={};n=this,null!=n&&(o=n.async),s.noConflict=function(){return n.async=o,s};var a=Object.prototype.toString,h=Array.isArray||function(t){return"[object Array]"===a.call(t)},u=function(t,e){if(t.forEach)return t.forEach(e);for(var r=0;r<t.length;r+=1)e(t[r],r,t)},l=function(t,e){if(t.map)return t.map(e);var r=[];return u(t,function(t,i,n){r.push(e(t,i,n))}),r},c=function(t,e,r){return t.reduce?t.reduce(e,r):(u(t,function(t,i,n){r=e(r,t,i,n)}),r)},p=function(t){if(Object.keys)return Object.keys(t);var e=[];for(var r in t)t.hasOwnProperty(r)&&e.push(r);return e};"undefined"!=typeof e&&e.nextTick?(s.nextTick=e.nextTick,"undefined"!=typeof setImmediate?s.setImmediate=function(t){setImmediate(t)}:s.setImmediate=s.nextTick):"function"==typeof setImmediate?(s.nextTick=function(t){setImmediate(t)},s.setImmediate=s.nextTick):(s.nextTick=function(t){setTimeout(t,0)},s.setImmediate=s.nextTick),s.each=function(t,e,r){function n(e){e?(r(e),r=function(){}):(o+=1,o>=t.length&&r())}if(r=r||function(){},!t.length)return r();var o=0;u(t,function(t){e(t,i(n))})},s.forEach=s.each,s.eachSeries=function(t,e,r){if(r=r||function(){},!t.length)return r();var i=0,n=function(){e(t[i],function(e){e?(r(e),r=function(){}):(i+=1,i>=t.length?r():n())})};n()},s.forEachSeries=s.eachSeries,s.eachLimit=function(t,e,r,i){var n=d(e);n.apply(null,[t,r,i])},s.forEachLimit=s.eachLimit;var d=function(t){return function(e,r,i){if(i=i||function(){},!e.length||0>=t)return i();var n=0,o=0,s=0;!function a(){if(n>=e.length)return i();for(;t>s&&o<e.length;)o+=1,s+=1,r(e[o-1],function(t){t?(i(t),i=function(){}):(n+=1,s-=1,n>=e.length?i():a())})}()}},f=function(t){return function(){var e=Array.prototype.slice.call(arguments);return t.apply(null,[s.each].concat(e))}},v=function(t,e){return function(){var r=Array.prototype.slice.call(arguments);return e.apply(null,[d(t)].concat(r))}},g=function(t){return function(){var e=Array.prototype.slice.call(arguments);return t.apply(null,[s.eachSeries].concat(e))}},m=function(t,e,r,i){if(e=l(e,function(t,e){return{index:e,value:t}}),i){var n=[];t(e,function(t,e){r(t.value,function(r,i){n[t.index]=i,e(r)})},function(t){i(t,n)})}else t(e,function(t,e){r(t.value,function(t){e(t)})})};s.map=f(m),s.mapSeries=g(m),s.mapLimit=function(t,e,r,i){return y(e)(t,r,i)};var y=function(t){return v(t,m)};s.reduce=function(t,e,r,i){s.eachSeries(t,function(t,i){r(e,t,function(t,r){e=r,i(t)})},function(t){i(t,e)})},s.inject=s.reduce,s.foldl=s.reduce,s.reduceRight=function(t,e,r,i){var n=l(t,function(t){return t}).reverse();s.reduce(n,e,r,i)},s.foldr=s.reduceRight;var x=function(t,e,r,i){var n=[];e=l(e,function(t,e){return{index:e,value:t}}),t(e,function(t,e){r(t.value,function(r){r&&n.push(t),e()})},function(t){i(l(n.sort(function(t,e){return t.index-e.index}),function(t){return t.value}))})};s.filter=f(x),s.filterSeries=g(x),s.select=s.filter,s.selectSeries=s.filterSeries;var b=function(t,e,r,i){var n=[];e=l(e,function(t,e){return{index:e,value:t}}),t(e,function(t,e){r(t.value,function(r){r||n.push(t),e()})},function(t){i(l(n.sort(function(t,e){return t.index-e.index}),function(t){return t.value}))})};s.reject=f(b),s.rejectSeries=g(b);var _=function(t,e,r,i){t(e,function(t,e){r(t,function(r){r?(i(t),i=function(){}):e()})},function(t){i()})};s.detect=f(_),s.detectSeries=g(_),s.some=function(t,e,r){s.each(t,function(t,i){e(t,function(t){t&&(r(!0),r=function(){}),i()})},function(t){r(!1)})},s.any=s.some,s.every=function(t,e,r){s.each(t,function(t,i){e(t,function(t){t||(r(!1),r=function(){}),i()})},function(t){r(!0)})},s.all=s.every,s.sortBy=function(t,e,r){s.map(t,function(t,r){e(t,function(e,i){e?r(e):r(null,{value:t,criteria:i})})},function(t,e){if(t)return r(t);var i=function(t,e){var r=t.criteria,i=e.criteria;return i>r?-1:r>i?1:0};r(null,l(e.sort(i),function(t){return t.value}))})},s.auto=function(t,e){e=e||function(){};var r=p(t),i=r.length;if(!i)return e();var n={},o=[],a=function(t){o.unshift(t)},l=function(t){for(var e=0;e<o.length;e+=1)if(o[e]===t)return void o.splice(e,1)},d=function(){i--,u(o.slice(0),function(t){t()})};a(function(){if(!i){var t=e;e=function(){},t(null,n)}}),u(r,function(r){var i=h(t[r])?t[r]:[t[r]],o=function(t){var i=Array.prototype.slice.call(arguments,1);if(i.length<=1&&(i=i[0]),t){var o={};u(p(n),function(t){o[t]=n[t]}),o[r]=i,e(t,o),e=function(){}}else n[r]=i,s.setImmediate(d)},f=i.slice(0,Math.abs(i.length-1))||[],v=function(){return c(f,function(t,e){return t&&n.hasOwnProperty(e)},!0)&&!n.hasOwnProperty(r)};if(v())i[i.length-1](o,n);else{var g=function(){v()&&(l(g),i[i.length-1](o,n))};a(g)}})},s.retry=function(t,e,r){var i=5,n=[];"function"==typeof t&&(r=e,e=t,t=i),t=parseInt(t,10)||i;var o=function(i,o){for(var a=function(t,e){return function(r){t(function(t,i){r(!t||e,{err:t,result:i})},o)}};t;)n.push(a(e,!(t-=1)));s.series(n,function(t,e){e=e[e.length-1],(i||r)(e.err,e.result)})};return r?o():o},s.waterfall=function(t,e){if(e=e||function(){},!h(t)){var r=new Error("First argument to waterfall must be an array of functions");return e(r)}if(!t.length)return e();var i=function(t){return function(r){if(r)e.apply(null,arguments),e=function(){};else{var n=Array.prototype.slice.call(arguments,1),o=t.next();o?n.push(i(o)):n.push(e),s.setImmediate(function(){t.apply(null,n)})}}};i(s.iterator(t))()};var T=function(t,e,r){if(r=r||function(){},h(e))t.map(e,function(t,e){t&&t(function(t){var r=Array.prototype.slice.call(arguments,1);r.length<=1&&(r=r[0]),e.call(null,t,r)})},r);else{var i={};t.each(p(e),function(t,r){e[t](function(e){var n=Array.prototype.slice.call(arguments,1);n.length<=1&&(n=n[0]),i[t]=n,r(e)})},function(t){r(t,i)})}};s.parallel=function(t,e){T({map:s.map,each:s.each},t,e)},s.parallelLimit=function(t,e,r){T({map:y(e),each:d(e)},t,r)},s.series=function(t,e){if(e=e||function(){},h(t))s.mapSeries(t,function(t,e){t&&t(function(t){var r=Array.prototype.slice.call(arguments,1);r.length<=1&&(r=r[0]),e.call(null,t,r)})},e);else{var r={};s.eachSeries(p(t),function(e,i){t[e](function(t){var n=Array.prototype.slice.call(arguments,1);n.length<=1&&(n=n[0]),r[e]=n,i(t)})},function(t){e(t,r)})}},s.iterator=function(t){var e=function(r){var i=function(){return t.length&&t[r].apply(null,arguments),i.next()};return i.next=function(){return r<t.length-1?e(r+1):null},i};return e(0)},s.apply=function(t){var e=Array.prototype.slice.call(arguments,1);return function(){return t.apply(null,e.concat(Array.prototype.slice.call(arguments)))}};var E=function(t,e,r,i){var n=[];t(e,function(t,e){r(t,function(t,r){n=n.concat(r||[]),e(t)})},function(t){i(t,n)})};s.concat=f(E),s.concatSeries=g(E),s.whilst=function(t,e,r){t()?e(function(i){return i?r(i):void s.whilst(t,e,r)}):r()},s.doWhilst=function(t,e,r){t(function(i){if(i)return r(i);var n=Array.prototype.slice.call(arguments,1);e.apply(null,n)?s.doWhilst(t,e,r):r()})},s.until=function(t,e,r){t()?r():e(function(i){return i?r(i):void s.until(t,e,r)})},s.doUntil=function(t,e,r){t(function(i){if(i)return r(i);var n=Array.prototype.slice.call(arguments,1);e.apply(null,n)?r():s.doUntil(t,e,r)})},s.queue=function(t,e){function r(t,e,r,i){return t.started||(t.started=!0),h(e)||(e=[e]),0==e.length?s.setImmediate(function(){t.drain&&t.drain()}):void u(e,function(e){var n={data:e,callback:"function"==typeof i?i:null};r?t.tasks.unshift(n):t.tasks.push(n),t.saturated&&t.tasks.length===t.concurrency&&t.saturated(),s.setImmediate(t.process)})}void 0===e&&(e=1);var n=0,o={tasks:[],concurrency:e,saturated:null,empty:null,drain:null,started:!1,paused:!1,push:function(t,e){r(o,t,!1,e)},kill:function(){o.drain=null,o.tasks=[]},unshift:function(t,e){r(o,t,!0,e)},process:function(){if(!o.paused&&n<o.concurrency&&o.tasks.length){var e=o.tasks.shift();o.empty&&0===o.tasks.length&&o.empty(),n+=1;var r=function(){n-=1,e.callback&&e.callback.apply(e,arguments),o.drain&&o.tasks.length+n===0&&o.drain(),o.process()},s=i(r);t(e.data,s)}},length:function(){return o.tasks.length},running:function(){return n},idle:function(){return o.tasks.length+n===0},pause:function(){o.paused!==!0&&(o.paused=!0,o.process())},resume:function(){o.paused!==!1&&(o.paused=!1,o.process())}};return o},s.priorityQueue=function(t,e){function r(t,e){return t.priority-e.priority}function i(t,e,r){for(var i=-1,n=t.length-1;n>i;){var o=i+(n-i+1>>>1);r(e,t[o])>=0?i=o:n=o-1}return i}function n(t,e,n,o){return t.started||(t.started=!0),h(e)||(e=[e]),0==e.length?s.setImmediate(function(){t.drain&&t.drain()}):void u(e,function(e){var a={data:e,priority:n,callback:"function"==typeof o?o:null};t.tasks.splice(i(t.tasks,a,r)+1,0,a),t.saturated&&t.tasks.length===t.concurrency&&t.saturated(),s.setImmediate(t.process)})}var o=s.queue(t,e);return o.push=function(t,e,r){n(o,t,e,r)},delete o.unshift,o},s.cargo=function(t,e){var r=!1,i=[],n={tasks:i,payload:e,saturated:null,empty:null,drain:null,drained:!0,push:function(t,r){h(t)||(t=[t]),u(t,function(t){i.push({data:t,callback:"function"==typeof r?r:null}),n.drained=!1,n.saturated&&i.length===e&&n.saturated()}),s.setImmediate(n.process)},process:function o(){if(!r){if(0===i.length)return n.drain&&!n.drained&&n.drain(),void(n.drained=!0);var s="number"==typeof e?i.splice(0,e):i.splice(0,i.length),a=l(s,function(t){return t.data});n.empty&&n.empty(),r=!0,t(a,function(){r=!1;var t=arguments;u(s,function(e){e.callback&&e.callback.apply(null,t)}),o()})}},length:function(){return i.length},running:function(){return r}};return n};var S=function(t){return function(e){var r=Array.prototype.slice.call(arguments,1);e.apply(null,r.concat([function(e){var r=Array.prototype.slice.call(arguments,1);"undefined"!=typeof console&&(e?console.error&&console.error(e):console[t]&&u(r,function(e){console[t](e)}))}]))}};s.log=S("log"),s.dir=S("dir"),s.memoize=function(t,e){var r={},i={};e=e||function(t){return t};var n=function(){var n=Array.prototype.slice.call(arguments),o=n.pop(),a=e.apply(null,n);a in r?s.nextTick(function(){o.apply(null,r[a])}):a in i?i[a].push(o):(i[a]=[o],t.apply(null,n.concat([function(){r[a]=arguments;var t=i[a];delete i[a];for(var e=0,n=t.length;n>e;e++)t[e].apply(null,arguments)}])))};return n.memo=r,n.unmemoized=t,n},s.unmemoize=function(t){return function(){return(t.unmemoized||t).apply(null,arguments)}},s.times=function(t,e,r){for(var i=[],n=0;t>n;n++)i.push(n);return s.map(i,e,r)},s.timesSeries=function(t,e,r){for(var i=[],n=0;t>n;n++)i.push(n);return s.mapSeries(i,e,r)},s.seq=function(){var t=arguments;return function(){var e=this,r=Array.prototype.slice.call(arguments),i=r.pop();s.reduce(t,r,function(t,r,i){r.apply(e,t.concat([function(){var t=arguments[0],e=Array.prototype.slice.call(arguments,1);i(t,e)}]))},function(t,r){i.apply(e,[t].concat(r))})}},s.compose=function(){return s.seq.apply(null,Array.prototype.reverse.call(arguments))};var w=function(t,e){var r=function(){var r=this,i=Array.prototype.slice.call(arguments),n=i.pop();return t(e,function(t,e){t.apply(r,i.concat([e]))},n)};if(arguments.length>2){var i=Array.prototype.slice.call(arguments,2);return r.apply(this,i)}return r};s.applyEach=f(w),s.applyEachSeries=g(w),s.forever=function(t,e){function r(i){if(i){if(e)return e(i);throw i}t(r)}r()},"undefined"!=typeof r&&r.exports?r.exports=s:"undefined"!=typeof t&&t.amd?t([],function(){return s}):n.async=s}()}).call(this,e("_process"))},{_process:3}],125:[function(t,e,r){"use strict";function i(t,e,r){this.fn=t,this.context=e,this.once=r||!1}function n(){}var o="function"!=typeof Object.create?"~":!1;n.prototype._events=void 0,n.prototype.listeners=function(t,e){var r=o?o+t:t,i=this._events&&this._events[r];if(e)return!!i;if(!i)return[];if(this._events[r].fn)return[this._events[r].fn];for(var n=0,s=this._events[r].length,a=new Array(s);s>n;n++)a[n]=this._events[r][n].fn;return a},n.prototype.emit=function(t,e,r,i,n,s){var a=o?o+t:t;if(!this._events||!this._events[a])return!1;var h,u,l=this._events[a],c=arguments.length;if("function"==typeof l.fn){switch(l.once&&this.removeListener(t,l.fn,void 0,!0),c){case 1:return l.fn.call(l.context),!0;case 2:return l.fn.call(l.context,e),!0;case 3:return l.fn.call(l.context,e,r),!0;case 4:return l.fn.call(l.context,e,r,i),!0;case 5:return l.fn.call(l.context,e,r,i,n),!0;case 6:return l.fn.call(l.context,e,r,i,n,s),!0}for(u=1,h=new Array(c-1);c>u;u++)h[u-1]=arguments[u];l.fn.apply(l.context,h)}else{var p,d=l.length;for(u=0;d>u;u++)switch(l[u].once&&this.removeListener(t,l[u].fn,void 0,!0),c){case 1:l[u].fn.call(l[u].context);break;case 2:l[u].fn.call(l[u].context,e);break;case 3:l[u].fn.call(l[u].context,e,r);break;default:if(!h)for(p=1,h=new Array(c-1);c>p;p++)h[p-1]=arguments[p];l[u].fn.apply(l[u].context,h)}}return!0},n.prototype.on=function(t,e,r){var n=new i(e,r||this),s=o?o+t:t;return this._events||(this._events=o?{}:Object.create(null)),this._events[s]?this._events[s].fn?this._events[s]=[this._events[s],n]:this._events[s].push(n):this._events[s]=n,this},n.prototype.once=function(t,e,r){var n=new i(e,r||this,!0),s=o?o+t:t;return this._events||(this._events=o?{}:Object.create(null)),this._events[s]?this._events[s].fn?this._events[s]=[this._events[s],n]:this._events[s].push(n):this._events[s]=n,this},n.prototype.removeListener=function(t,e,r,i){var n=o?o+t:t;if(!this._events||!this._events[n])return this;var s=this._events[n],a=[];if(e)if(s.fn)(s.fn!==e||i&&!s.once||r&&s.context!==r)&&a.push(s);else for(var h=0,u=s.length;u>h;h++)(s[h].fn!==e||i&&!s[h].once||r&&s[h].context!==r)&&a.push(s[h]);return a.length?this._events[n]=1===a.length?a[0]:a:delete this._events[n],this},n.prototype.removeAllListeners=function(t){return this._events?(t?delete this._events[o?o+t:t]:this._events=o?{}:Object.create(null),this):this},n.prototype.off=n.prototype.removeListener,n.prototype.addListener=n.prototype.on,n.prototype.setMaxListeners=function(){return this},n.prefixed=o,e.exports=n},{}],126:[function(t,e,r){function i(t,e){a.call(this),e=e||10,this.baseUrl=t||"",this.progress=0,this.loading=!1,this._progressChunk=0,this._beforeMiddleware=[],this._afterMiddleware=[],this._boundLoadResource=this._loadResource.bind(this),this._boundOnLoad=this._onLoad.bind(this),this._buffer=[],this._numToLoad=0,this._queue=n.queue(this._boundLoadResource,e),this.resources={}}var n=t("async"),o=t("url"),s=t("./Resource"),a=t("eventemitter3");i.prototype=Object.create(a.prototype),i.prototype.constructor=i,e.exports=i,i.prototype.add=i.prototype.enqueue=function(t,e,r,i){if(Array.isArray(t)){for(var n=0;n<t.length;++n)this.add(t[n]);return this}if("object"==typeof t&&(i=e||t.callback||t.onComplete,r=t,e=t.url,t=t.name||t.key||t.url),"string"!=typeof e&&(i=r,r=e,e=t),"string"!=typeof e)throw new Error("No url passed to add resource to loader.");if("function"==typeof r&&(i=r,r=null),this.resources[t])throw new Error('Resource with name "'+t+'" already exists.');return e=this._handleBaseUrl(e),this.resources[t]=new s(t,e,r),"function"==typeof i&&this.resources[t].once("afterMiddleware",i),this._numToLoad++,this._queue.started?(this._queue.push(this.resources[t]),this._progressChunk=(100-this.progress)/(this._queue.length()+this._queue.running())):(this._buffer.push(this.resources[t]),this._progressChunk=100/this._buffer.length),this},i.prototype._handleBaseUrl=function(t){var e=o.parse(t);return e.protocol||0===e.pathname.indexOf("//")?t:this.baseUrl.length&&this.baseUrl.lastIndexOf("/")!==this.baseUrl.length-1&&t.lastIndexOf("/")!==t.length-1?this.baseUrl+"/"+t:this.baseUrl+t},i.prototype.before=i.prototype.pre=function(t){return this._beforeMiddleware.push(t),this},i.prototype.after=i.prototype.use=function(t){return this._afterMiddleware.push(t),this},i.prototype.reset=function(){this.progress=0,this.loading=!1,this._progressChunk=0,this._buffer.length=0,this._numToLoad=0,this._queue.kill(),this._queue.started=!1,this.resources={}},i.prototype.load=function(t){if("function"==typeof t&&this.once("complete",t),this._queue.started)return this;this.emit("start",this);for(var e=0;e<this._buffer.length;++e)this._queue.push(this._buffer[e]);return this._buffer.length=0,this},i.prototype._loadResource=function(t,e){var r=this;t._dequeue=e,this._runMiddleware(t,this._beforeMiddleware,function(){t.load(r._boundOnLoad)})},i.prototype._onComplete=function(){this.emit("complete",this,this.resources)},i.prototype._onLoad=function(t){this.progress+=this._progressChunk,this.emit("progress",this,t),this._runMiddleware(t,this._afterMiddleware,function(){t.emit("afterMiddleware",t),this._numToLoad--,0===this._numToLoad&&(this.progress=100,this._onComplete()),t.error?this.emit("error",t.error,this,t):this.emit("load",this,t)}),t._dequeue()},i.prototype._runMiddleware=function(t,e,r){var i=this;n.eachSeries(e,function(e,r){e.call(i,t,r)},r.bind(this,t))},i.LOAD_TYPE=s.LOAD_TYPE,i.XHR_READY_STATE=s.XHR_READY_STATE,i.XHR_RESPONSE_TYPE=s.XHR_RESPONSE_TYPE},{"./Resource":127,async:124,eventemitter3:125,url:8}],127:[function(t,e,r){function i(t,e,r){if(s.call(this),r=r||{},"string"!=typeof t||"string"!=typeof e)throw new Error("Both name and url are required for constructing a resource.");this.name=t,this.url=e,this.isDataUrl=0===this.url.indexOf("data:"),this.data=null,this.crossOrigin=r.crossOrigin===!0?"anonymous":null,this.loadType=r.loadType||this._determineLoadType(),this.xhrType=r.xhrType,this.error=null,this.xhr=null,this.isJson=!1,this.isXml=!1,this.isImage=!1,this.isAudio=!1,this.isVideo=!1,this._dequeue=null,this._boundComplete=this.complete.bind(this),this._boundOnError=this._onError.bind(this),this._boundOnProgress=this._onProgress.bind(this),this._boundXhrOnError=this._xhrOnError.bind(this),this._boundXhrOnAbort=this._xhrOnAbort.bind(this),this._boundXhrOnLoad=this._xhrOnLoad.bind(this),this._boundXdrOnTimeout=this._xdrOnTimeout.bind(this)}function n(t){return t.toString().replace("object ","")}function o(t,e,r){e&&0===e.indexOf(".")&&(e=e.substring(1)),e&&(t[e]=r)}var s=t("eventemitter3"),a=t("url"),h=!(!window.XDomainRequest||"withCredentials"in new XMLHttpRequest),u=null;i.prototype=Object.create(s.prototype),i.prototype.constructor=i,e.exports=i,i.prototype.complete=function(){this.data&&this.data.removeEventListener&&(this.data.removeEventListener("error",this._boundOnError),this.data.removeEventListener("load",this._boundComplete),this.data.removeEventListener("progress",this._boundOnProgress),this.data.removeEventListener("canplaythrough",this._boundComplete)),this.xhr&&(this.xhr.removeEventListener?(this.xhr.removeEventListener("error",this._boundXhrOnError),this.xhr.removeEventListener("abort",this._boundXhrOnAbort),this.xhr.removeEventListener("progress",this._boundOnProgress),this.xhr.removeEventListener("load",this._boundXhrOnLoad)):(this.xhr.onerror=null,this.xhr.ontimeout=null,this.xhr.onprogress=null,this.xhr.onload=null)),this.emit("complete",this)},i.prototype.load=function(t){switch(this.emit("start",this),t&&this.once("complete",t),"string"!=typeof this.crossOrigin&&(this.crossOrigin=this._determineCrossOrigin(this.url)),this.loadType){case i.LOAD_TYPE.IMAGE:this._loadImage();break;case i.LOAD_TYPE.AUDIO:this._loadElement("audio");break;case i.LOAD_TYPE.VIDEO:this._loadElement("video");break;case i.LOAD_TYPE.XHR:default:h&&this.crossOrigin?this._loadXdr():this._loadXhr()}},i.prototype._loadImage=function(){this.data=new Image,this.crossOrigin&&(this.data.crossOrigin=this.crossOrigin),this.data.src=this.url,this.isImage=!0,this.data.addEventListener("error",this._boundOnError,!1),this.data.addEventListener("load",this._boundComplete,!1),this.data.addEventListener("progress",this._boundOnProgress,!1)},i.prototype._loadElement=function(t){if("audio"===t&&"undefined"!=typeof Audio?this.data=new Audio:this.data=document.createElement(t),null===this.data)return this.error=new Error("Unsupported element "+t),void this.complete();if(navigator.isCocoonJS)this.data.src=Array.isArray(this.url)?this.url[0]:this.url;else if(Array.isArray(this.url))for(var e=0;e<this.url.length;++e)this.data.appendChild(this._createSource(t,this.url[e]));else this.data.appendChild(this._createSource(t,this.url));this["is"+t[0].toUpperCase()+t.substring(1)]=!0,this.data.addEventListener("error",this._boundOnError,!1),this.data.addEventListener("load",this._boundComplete,!1),this.data.addEventListener("progress",this._boundOnProgress,!1),this.data.addEventListener("canplaythrough",this._boundComplete,!1),this.data.load()},i.prototype._loadXhr=function(){"string"!=typeof this.xhrType&&(this.xhrType=this._determineXhrType());var t=this.xhr=new XMLHttpRequest;t.open("GET",this.url,!0),this.xhrType===i.XHR_RESPONSE_TYPE.JSON||this.xhrType===i.XHR_RESPONSE_TYPE.DOCUMENT?t.responseType=i.XHR_RESPONSE_TYPE.TEXT:t.responseType=this.xhrType,t.addEventListener("error",this._boundXhrOnError,!1),t.addEventListener("abort",this._boundXhrOnAbort,!1),t.addEventListener("progress",this._boundOnProgress,!1),t.addEventListener("load",this._boundXhrOnLoad,!1),t.send()},i.prototype._loadXdr=function(){"string"!=typeof this.xhrType&&(this.xhrType=this._determineXhrType());var t=this.xhr=new XDomainRequest;t.timeout=5e3,t.onerror=this._boundXhrOnError,t.ontimeout=this._boundXdrOnTimeout,t.onprogress=this._boundOnProgress,t.onload=this._boundXhrOnLoad,t.open("GET",this.url,!0),setTimeout(function(){t.send()},0)},i.prototype._createSource=function(t,e,r){r||(r=t+"/"+e.substr(e.lastIndexOf(".")+1));var i=document.createElement("source");return i.src=e,i.type=r,i},i.prototype._onError=function(t){this.error=new Error("Failed to load element using "+t.target.nodeName),this.complete()},i.prototype._onProgress=function(t){t&&t.lengthComputable&&this.emit("progress",this,t.loaded/t.total)},i.prototype._xhrOnError=function(){this.error=new Error(n(this.xhr)+" Request failed. Status: "+this.xhr.status+', text: "'+this.xhr.statusText+'"'),this.complete()},i.prototype._xhrOnAbort=function(){this.error=new Error(n(this.xhr)+" Request was aborted by the user."),this.complete()},i.prototype._xdrOnTimeout=function(){this.error=new Error(n(this.xhr)+" Request timed out."),this.complete()},i.prototype._xhrOnLoad=function(){var t=this.xhr,e=void 0!==t.status?t.status:200;if(200===e||204===e||0===e&&t.responseText.length>0)if(this.xhrType===i.XHR_RESPONSE_TYPE.TEXT)this.data=t.responseText;else if(this.xhrType===i.XHR_RESPONSE_TYPE.JSON)try{this.data=JSON.parse(t.responseText),this.isJson=!0}catch(r){this.error=new Error("Error trying to parse loaded json:",r)}else if(this.xhrType===i.XHR_RESPONSE_TYPE.DOCUMENT)try{if(window.DOMParser){var n=new DOMParser;this.data=n.parseFromString(t.responseText,"text/xml")}else{var o=document.createElement("div");o.innerHTML=t.responseText,this.data=o}this.isXml=!0}catch(r){this.error=new Error("Error trying to parse loaded xml:",r)}else this.data=t.response||t.responseText;else this.error=new Error("["+t.status+"]"+t.statusText+":"+t.responseURL);this.complete()},i.prototype._determineCrossOrigin=function(t,e){if(0===t.indexOf("data:"))return"";e=e||window.location,u||(u=document.createElement("a")),u.href=t,t=a.parse(u.href);var r=!t.port&&""===e.port||t.port===e.port;return t.hostname===e.hostname&&r&&t.protocol===e.protocol?"":"anonymous"},i.prototype._determineXhrType=function(){return i._xhrTypeMap[this._getExtension()]||i.XHR_RESPONSE_TYPE.TEXT},i.prototype._determineLoadType=function(){return i._loadTypeMap[this._getExtension()]||i.LOAD_TYPE.XHR},i.prototype._getExtension=function(){var t,e=this.url;if(this.isDataUrl){var r=e.indexOf("/");t=e.substring(r+1,e.indexOf(";",r))}else{var i=e.indexOf("?");-1!==i&&(e=e.substring(0,i)),t=e.substring(e.lastIndexOf(".")+1)}return t},i.prototype._getMimeFromXhrType=function(t){switch(t){case i.XHR_RESPONSE_TYPE.BUFFER:return"application/octet-binary";case i.XHR_RESPONSE_TYPE.BLOB:return"application/blob";case i.XHR_RESPONSE_TYPE.DOCUMENT:return"application/xml";case i.XHR_RESPONSE_TYPE.JSON:return"application/json";case i.XHR_RESPONSE_TYPE.DEFAULT:case i.XHR_RESPONSE_TYPE.TEXT:default:return"text/plain"}},i.LOAD_TYPE={XHR:1,IMAGE:2,AUDIO:3,VIDEO:4},i.XHR_READY_STATE={UNSENT:0,OPENED:1,HEADERS_RECEIVED:2,LOADING:3,DONE:4},i.XHR_RESPONSE_TYPE={DEFAULT:"text",BUFFER:"arraybuffer",BLOB:"blob",DOCUMENT:"document",JSON:"json",TEXT:"text"},i._loadTypeMap={gif:i.LOAD_TYPE.IMAGE,png:i.LOAD_TYPE.IMAGE,bmp:i.LOAD_TYPE.IMAGE,jpg:i.LOAD_TYPE.IMAGE,jpeg:i.LOAD_TYPE.IMAGE,tif:i.LOAD_TYPE.IMAGE,tiff:i.LOAD_TYPE.IMAGE,webp:i.LOAD_TYPE.IMAGE,tga:i.LOAD_TYPE.IMAGE},i._xhrTypeMap={xhtml:i.XHR_RESPONSE_TYPE.DOCUMENT,html:i.XHR_RESPONSE_TYPE.DOCUMENT,htm:i.XHR_RESPONSE_TYPE.DOCUMENT,xml:i.XHR_RESPONSE_TYPE.DOCUMENT,tmx:i.XHR_RESPONSE_TYPE.DOCUMENT,tsx:i.XHR_RESPONSE_TYPE.DOCUMENT,svg:i.XHR_RESPONSE_TYPE.DOCUMENT,gif:i.XHR_RESPONSE_TYPE.BLOB,png:i.XHR_RESPONSE_TYPE.BLOB,bmp:i.XHR_RESPONSE_TYPE.BLOB,jpg:i.XHR_RESPONSE_TYPE.BLOB,jpeg:i.XHR_RESPONSE_TYPE.BLOB,tif:i.XHR_RESPONSE_TYPE.BLOB,tiff:i.XHR_RESPONSE_TYPE.BLOB,webp:i.XHR_RESPONSE_TYPE.BLOB,tga:i.XHR_RESPONSE_TYPE.BLOB,json:i.XHR_RESPONSE_TYPE.JSON,text:i.XHR_RESPONSE_TYPE.TEXT,txt:i.XHR_RESPONSE_TYPE.TEXT},i.setExtensionLoadType=function(t,e){o(i._loadTypeMap,t,e)},i.setExtensionXhrType=function(t,e){o(i._xhrTypeMap,t,e)}},{eventemitter3:125,url:8}],128:[function(t,e,r){e.exports={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encodeBinary:function(t){for(var e,r="",i=new Array(4),n=0,o=0,s=0;n<t.length;){for(e=new Array(3),o=0;o<e.length;o++)n<t.length?e[o]=255&t.charCodeAt(n++):e[o]=0;switch(i[0]=e[0]>>2,i[1]=(3&e[0])<<4|e[1]>>4,i[2]=(15&e[1])<<2|e[2]>>6,i[3]=63&e[2],s=n-(t.length-1)){case 2:i[3]=64,i[2]=64;break;case 1:i[3]=64}for(o=0;o<i.length;o++)r+=this._keyStr.charAt(i[o])}return r}}},{}],129:[function(t,e,r){e.exports=t("./Loader"),e.exports.Resource=t("./Resource"),e.exports.middleware={caching:{memory:t("./middlewares/caching/memory")},parsing:{blob:t("./middlewares/parsing/blob")}}},{"./Loader":126,"./Resource":127,"./middlewares/caching/memory":130,"./middlewares/parsing/blob":131}],130:[function(t,e,r){var i={};e.exports=function(){return function(t,e){i[t.url]?(t.data=i[t.url],t.complete()):(t.once("complete",function(){i[this.url]=this.data}),e())}}},{}],131:[function(t,e,r){var i=t("../../Resource"),n=t("../../b64");window.URL=window.URL||window.webkitURL,e.exports=function(){return function(t,e){if(!t.data)return e();if(t.xhr&&t.xhrType===i.XHR_RESPONSE_TYPE.BLOB)if(window.Blob&&"string"!=typeof t.data){if(0===t.data.type.indexOf("image")){var r=URL.createObjectURL(t.data);t.blob=t.data,t.data=new Image,t.data.src=r,t.isImage=!0,t.data.onload=function(){URL.revokeObjectURL(r),t.data.onload=null,e()}}}else{var o=t.xhr.getResponseHeader("content-type");o&&0===o.indexOf("image")&&(t.data=new Image,t.data.src="data:"+o+";base64,"+n.encodeBinary(t.xhr.responseText),t.isImage=!0,t.data.onload=function(){t.data.onload=null,e()})}else e()}}},{"../../Resource":127,"../../b64":128}]},{},[105])(105)});
 //# sourceMappingURL=pixi.min.js.map
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var entitas;
-(function (entitas) {
-    var Exception = (function () {
-        function Exception(message) {
-            this.message = message;
-        }
-        Exception.prototype.toString = function () {
-            return this.message;
-        };
-        return Exception;
-    })();
-    entitas.Exception = Exception;
-    var EntityAlreadyHasComponentException = (function (_super) {
-        __extends(EntityAlreadyHasComponentException, _super);
-        function EntityAlreadyHasComponentException(message, index) {
-            _super.call(this, message + "\nEntity already has a component at index " + index);
-        }
-        return EntityAlreadyHasComponentException;
-    })(Exception);
-    entitas.EntityAlreadyHasComponentException = EntityAlreadyHasComponentException;
-    var EntityDoesNotHaveComponentException = (function (_super) {
-        __extends(EntityDoesNotHaveComponentException, _super);
-        function EntityDoesNotHaveComponentException(message, index) {
-            _super.call(this, message + "\nEntity does not have a component at index " + index);
-        }
-        return EntityDoesNotHaveComponentException;
-    })(Exception);
-    entitas.EntityDoesNotHaveComponentException = EntityDoesNotHaveComponentException;
-    var EntityIsNotEnabledException = (function (_super) {
-        __extends(EntityIsNotEnabledException, _super);
-        function EntityIsNotEnabledException(message) {
-            _super.call(this, message + "\nEntity is not enabled");
-        }
-        return EntityIsNotEnabledException;
-    })(Exception);
-    entitas.EntityIsNotEnabledException = EntityIsNotEnabledException;
-    var EntityIsAlreadyReleasedException = (function (_super) {
-        __extends(EntityIsAlreadyReleasedException, _super);
-        function EntityIsAlreadyReleasedException() {
-            _super.call(this, "Entity is already released!");
-        }
-        return EntityIsAlreadyReleasedException;
-    })(Exception);
-    entitas.EntityIsAlreadyReleasedException = EntityIsAlreadyReleasedException;
-    var SingleEntityException = (function (_super) {
-        __extends(SingleEntityException, _super);
-        function SingleEntityException(matcher) {
-            _super.call(this, "Multiple entities exist matching " + matcher);
-        }
-        return SingleEntityException;
-    })(Exception);
-    entitas.SingleEntityException = SingleEntityException;
-    var GroupObserverException = (function (_super) {
-        __extends(GroupObserverException, _super);
-        function GroupObserverException(message) {
-            _super.call(this, message);
-        }
-        return GroupObserverException;
-    })(Exception);
-    entitas.GroupObserverException = GroupObserverException;
-    var PoolDoesNotContainEntityException = (function (_super) {
-        __extends(PoolDoesNotContainEntityException, _super);
-        function PoolDoesNotContainEntityException(entity, message) {
-            _super.call(this, message + "\nPool does not contain entity " + entity);
-        }
-        return PoolDoesNotContainEntityException;
-    })(Exception);
-    entitas.PoolDoesNotContainEntityException = PoolDoesNotContainEntityException;
-    var EntityIsNotDestroyedException = (function (_super) {
-        __extends(EntityIsNotDestroyedException, _super);
-        function EntityIsNotDestroyedException(message) {
-            _super.call(this, message + "\nEntity is not destroyed yet!");
-        }
-        return EntityIsNotDestroyedException;
-    })(Exception);
-    entitas.EntityIsNotDestroyedException = EntityIsNotDestroyedException;
-    var MatcherException = (function (_super) {
-        __extends(MatcherException, _super);
-        function MatcherException(matcher) {
-            _super.call(this, "matcher.indices.length must be 1 but was " + matcher.indices.length);
-        }
-        return MatcherException;
-    })(Exception);
-    entitas.MatcherException = MatcherException;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=Exceptions.js.map
-var entitas;
-(function (entitas) {
-    var Signal = (function () {
-        /**
-         *
-         * @param context
-         * @param alloc
-         */
-        function Signal(context, alloc) {
-            if (alloc === void 0) { alloc = 16; }
-            this._listeners = [];
-            this._context = context;
-            this._alloc = alloc;
-            this._size = 0;
-        }
-        /**
-         * Dispatch event
-         * @param args
-         */
-        Signal.prototype.dispatch = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            var listeners = this._listeners;
-            var size = listeners.length;
-            var context = this._context;
-            for (var i = 0; i < size; i++) {
-                listeners[i].apply(context, args);
-            }
-        };
-        /**
-         * Add event listener
-         * @param listener
-         */
-        Signal.prototype.add = function (listener) {
-            this._listeners.push(listener);
-            //var listeners = this._listeners;
-            //var length = listeners.length;
-            //
-            //if (this._size === length) {
-            //  listeners.length = ~~((length * 3) / 2) + 1;
-            //}
-            //listeners[this._size++] = listener;
-            //
-        };
-        /**
-         * Remove event listener
-         * @param listener
-         */
-        Signal.prototype.remove = function (listener) {
-            var listeners = this._listeners;
-            var index = listeners.indexOf(listener);
-            if (index !== -1)
-                listeners.splice(index, 1);
-            //var listeners = this._listeners;
-            //var size = this._size;
-            //
-            //for (var i = 0; i < size; i++) {
-            //  if (listener == listeners[i]) {
-            //    for (var j = i, k = i+1; k < size; j++, k++) {
-            //      listeners[j] = listeners[k];
-            //    }
-            //    delete listeners[--this._size];
-            //    //listeners[--this._size] = undefined;
-            //    return;
-            //  }
-            //}
-        };
-        /**
-         * Clear and reset to original alloc
-         */
-        Signal.prototype.clear = function () {
-            this._listeners.length = 0;
-            //this._listeners.length = this._alloc;
-        };
-        return Signal;
-    })();
-    entitas.Signal = Signal;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=Signal.js.map
-//# sourceMappingURL=IComponent.js.map
-//# sourceMappingURL=IMatcher.js.map
-//# sourceMappingURL=ISystem.js.map
-//# sourceMappingURL=IExecuteSystem.js.map
-//# sourceMappingURL=IInitializeSystem.js.map
-//# sourceMappingURL=IReactiveSystem.js.map
-var entitas;
-(function (entitas) {
-    var MatcherException = entitas.MatcherException;
-    var Matcher = (function () {
-        function Matcher() {
-            this._id = Matcher.uniqueId++;
-        }
-        Object.defineProperty(Matcher.prototype, "id", {
-            get: function () { return this._id; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Matcher.prototype, "indices", {
-            get: function () {
-                if (!this._indices) {
-                    this._indices = this.mergeIndices();
-                }
-                return this._indices;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Matcher.prototype, "allOfIndices", {
-            get: function () { return this._allOfIndices; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Matcher.prototype, "anyOfIndices", {
-            get: function () { return this._anyOfIndices; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Matcher.prototype, "noneOfIndices", {
-            get: function () { return this._noneOfIndices; },
-            enumerable: true,
-            configurable: true
-        });
-        Matcher.prototype.anyOf = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            if ('number' === typeof args[0] || 'string' === typeof args[0]) {
-                this._anyOfIndices = Matcher.distinctIndices(args);
-                this._indices = undefined;
-                return this;
-            }
-            else {
-                return this.anyOf.apply(this, Matcher.mergeIndices(args));
-            }
-        };
-        Matcher.prototype.noneOf = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            if ('number' === typeof args[0] || 'string' === typeof args[0]) {
-                this._noneOfIndices = Matcher.distinctIndices(args);
-                this._indices = undefined;
-                return this;
-            }
-            else {
-                return this.noneOf.apply(this, Matcher.mergeIndices(args));
-            }
-        };
-        Matcher.prototype.matches = function (entity) {
-            var matchesAllOf = this._allOfIndices === undefined || entity.hasComponents(this._allOfIndices);
-            var matchesAnyOf = this._anyOfIndices === undefined || entity.hasAnyComponent(this._anyOfIndices);
-            var matchesNoneOf = this._noneOfIndices === undefined || !entity.hasAnyComponent(this._noneOfIndices);
-            return matchesAllOf && matchesAnyOf && matchesNoneOf;
-        };
-        Matcher.prototype.mergeIndices = function () {
-            //var totalIndices = (this._allOfIndices !== undefined ? this._allOfIndices.length : 0)
-            //  + (this._anyOfIndices !== undefined ? this._anyOfIndices.length : 0)
-            //  + (this._noneOfIndices !== undefined ? this._noneOfIndices.length : 0);
-            var indicesList = [];
-            if (this._allOfIndices !== undefined) {
-                indicesList = indicesList.concat(this._allOfIndices);
-            }
-            if (this._anyOfIndices !== undefined) {
-                indicesList = indicesList.concat(this._anyOfIndices);
-            }
-            if (this._noneOfIndices !== undefined) {
-                indicesList = indicesList.concat(this._noneOfIndices);
-            }
-            return Matcher.distinctIndices(indicesList);
-        };
-        Matcher.prototype.toString = function () {
-            if (this._toStringCache === undefined) {
-                var sb = [];
-                if (this._allOfIndices !== undefined) {
-                    Matcher.appendIndices(sb, "AllOf", this._allOfIndices);
-                }
-                if (this._anyOfIndices !== undefined) {
-                    if (this._allOfIndices !== undefined) {
-                        sb.push(".");
-                    }
-                    Matcher.appendIndices(sb, "AnyOf", this._anyOfIndices);
-                }
-                if (this._noneOfIndices !== undefined) {
-                    Matcher.appendIndices(sb, ".NoneOf", this._noneOfIndices);
-                }
-                this._toStringCache = sb.join('');
-            }
-            return this._toStringCache;
-        };
-        Matcher.prototype.equals = function (obj) {
-            if (obj == null || obj === undefined)
-                return false;
-            var matcher = obj;
-            if (!Matcher.equalIndices(matcher.allOfIndices, this._allOfIndices)) {
-                return false;
-            }
-            if (!Matcher.equalIndices(matcher.anyOfIndices, this._anyOfIndices)) {
-                return false;
-            }
-            if (!Matcher.equalIndices(matcher.noneOfIndices, this._noneOfIndices)) {
-                return false;
-            }
-            return true;
-        };
-        Matcher.equalIndices = function (i1, i2) {
-            if ((i1 === undefined) != (i2 === undefined)) {
-                return false;
-            }
-            if (i1 === undefined) {
-                return true;
-            }
-            if (i1.length !== i2.length) {
-                return false;
-            }
-            for (var i = 0, indicesLength = i1.length; i < indicesLength; i++) {
-                /** compare coerced values so we can compare string type to number type */
-                if (i1[i] != i2[i]) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        Matcher.distinctIndices = function (indices) {
-            var indicesSet = {};
-            for (var i = 0, l = indices.length; i < l; i++) {
-                var k = '' + indices[i];
-                indicesSet[k] = i;
-            }
-            return [].concat(Object.keys(indicesSet));
-        };
-        Matcher.mergeIndices = function (matchers) {
-            var indices = [];
-            for (var i = 0, matchersLength = matchers.length; i < matchersLength; i++) {
-                var matcher = matchers[i];
-                if (matcher.indices.length !== 1) {
-                    throw new MatcherException(matcher);
-                }
-                indices[i] = matcher.indices[0];
-            }
-            return indices;
-        };
-        Matcher.allOf = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            if ('number' === typeof args[0] || 'string' === typeof args[0]) {
-                var matcher = new Matcher();
-                matcher._allOfIndices = Matcher.distinctIndices(args);
-                return matcher;
-            }
-            else {
-                return Matcher.allOf.apply(this, Matcher.mergeIndices(args));
-            }
-        };
-        Matcher.anyOf = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
-            }
-            if ('number' === typeof args[0] || 'string' === typeof args[0]) {
-                var matcher = new Matcher();
-                matcher._anyOfIndices = Matcher.distinctIndices(args);
-                return matcher;
-            }
-            else {
-                return Matcher.anyOf.apply(this, Matcher.mergeIndices(args));
-            }
-        };
-        Matcher.appendIndices = function (sb, prefix, indexArray) {
-            var SEPERATOR = ", ";
-            sb.push(prefix);
-            sb.push("(");
-            var lastSeperator = indexArray.length - 1;
-            for (var i = 0, indicesLength = indexArray.length; i < indicesLength; i++) {
-                sb.push('' + indexArray[i]);
-                if (i < lastSeperator) {
-                    sb.push(SEPERATOR);
-                }
-            }
-            sb.push(")");
-        };
-        Matcher.uniqueId = 0;
-        return Matcher;
-    })();
-    entitas.Matcher = Matcher;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=Matcher.js.map
-//# sourceMappingURL=MatcherInterfaces.js.map
-var entitas;
-(function (entitas) {
-    var TriggerOnEvent = (function () {
-        function TriggerOnEvent(trigger, eventType) {
-            this.trigger = trigger;
-            this.eventType = eventType;
-        }
-        return TriggerOnEvent;
-    })();
-    entitas.TriggerOnEvent = TriggerOnEvent;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=TriggerOnEvent.js.map
-var entitas;
-(function (entitas) {
-    var Signal = entitas.Signal;
-    var EntityIsNotEnabledException = entitas.EntityIsNotEnabledException;
-    var EntityIsAlreadyReleasedException = entitas.EntityIsAlreadyReleasedException;
-    var EntityAlreadyHasComponentException = entitas.EntityAlreadyHasComponentException;
-    var EntityDoesNotHaveComponentException = entitas.EntityDoesNotHaveComponentException;
-    var Entity = (function () {
-        function Entity(totalComponents) {
-            if (totalComponents === void 0) { totalComponents = 16; }
-            this._creationIndex = 0;
-            this._isEnabled = true;
-            this._refCount = 0;
-            this.onEntityReleased = new Signal(this);
-            this.onComponentAdded = new Signal(this);
-            this.onComponentRemoved = new Signal(this);
-            this.onComponentReplaced = new Signal(this);
-            this._components = new Array(totalComponents);
-        }
-        Object.defineProperty(Entity.prototype, "creationIndex", {
-            get: function () { return this._creationIndex; },
-            enumerable: true,
-            configurable: true
-        });
-        Entity.prototype.addComponent = function (index, component) {
-            if (!this._isEnabled) {
-                throw new EntityIsNotEnabledException("Cannot add component!");
-            }
-            if (this.hasComponent(index)) {
-                var errorMsg = "Cannot add component at index " + index + " to " + this;
-                throw new EntityAlreadyHasComponentException(errorMsg, index);
-            }
-            this._components[index] = component;
-            this._componentsCache = undefined;
-            this._componentIndicesCache = undefined;
-            this._toStringCache = undefined;
-            this.onComponentAdded.dispatch(this, index, component);
-            return this;
-        };
-        Entity.prototype.removeComponent = function (index) {
-            if (!this._isEnabled) {
-                throw new EntityIsNotEnabledException("Cannot remove component!");
-            }
-            if (!this.hasComponent(index)) {
-                var errorMsg = "Cannot remove component at index " + index + " from " + this;
-                throw new EntityDoesNotHaveComponentException(errorMsg, index);
-            }
-            this._replaceComponent(index, undefined);
-            return this;
-        };
-        Entity.prototype.replaceComponent = function (index, component) {
-            if (!this._isEnabled) {
-                throw new EntityIsNotEnabledException("Cannot replace component!");
-            }
-            if (this.hasComponent(index)) {
-                this._replaceComponent(index, component);
-            }
-            else if (component !== undefined) {
-                this.addComponent(index, component);
-            }
-            return this;
-        };
-        Entity.prototype._replaceComponent = function (index, replacement) {
-            var previousComponent = this._components[index];
-            if (previousComponent === replacement) {
-                this.onComponentReplaced.dispatch(this, index, previousComponent, replacement);
-            }
-            else {
-                this._components[index] = replacement;
-                this._componentsCache = undefined;
-                if (replacement === undefined) {
-                    delete this._components[index];
-                    this._componentIndicesCache = undefined;
-                    this._toStringCache = undefined;
-                    this.onComponentRemoved.dispatch(this, index, previousComponent);
-                }
-                else {
-                    this.onComponentReplaced.dispatch(this, index, previousComponent, replacement);
-                }
-            }
-        };
-        Entity.prototype.getComponent = function (index) {
-            if (!this.hasComponent(index)) {
-                var errorMsg = "Cannot get component at index " + index + " from " + this;
-                throw new EntityDoesNotHaveComponentException(errorMsg, index);
-            }
-            return this._components[index];
-        };
-        Entity.prototype.getComponents = function () {
-            if (this._componentsCache === undefined) {
-                var components = [];
-                for (var i = 0, componentsLength = this._components.length; i < componentsLength; i++) {
-                    var component = this._components[i];
-                    if (component !== undefined) {
-                        components.push(component);
-                    }
-                }
-                this._componentsCache = components;
-            }
-            return this._componentsCache;
-        };
-        Entity.prototype.getComponentIndices = function () {
-            if (this._componentIndicesCache === undefined) {
-                var indices = [];
-                for (var i = 0, componentsLength = this._components.length; i < componentsLength; i++) {
-                    if (this._components[i] !== undefined) {
-                        indices.push(i);
-                    }
-                }
-                this._componentIndicesCache = indices;
-            }
-            return this._componentIndicesCache;
-        };
-        Entity.prototype.hasComponent = function (index) {
-            return this._components[index] !== undefined;
-        };
-        Entity.prototype.hasComponents = function (indices) {
-            for (var i = 0, indicesLength = indices.length; i < indicesLength; i++) {
-                if (this._components[indices[i]] === undefined) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        Entity.prototype.hasAnyComponent = function (indices) {
-            for (var i = 0, indicesLength = indices.length; i < indicesLength; i++) {
-                if (this._components[indices[i]] !== undefined) {
+// tween.ts v0.1.0 https://github.com/edsilv/tween.ts
+!function t(n,e,i){function r(o,s){if(!e[o]){if(!n[o]){var u="function"==typeof require&&require;if(!s&&u)return u(o,!0);if(a)return a(o,!0);throw new Error("Cannot find module '"+o+"'")}var h=e[o]={exports:{}};n[o][0].call(h.exports,function(t){var e=n[o][1][t];return r(e?e:t)},h,h.exports,t,n,e,i)}return e[o].exports}for(var a="function"==typeof require&&require,o=0;o<i.length;o++)r(i[o]);return r}({1:[function(t,n,e){window.TWEEN=this,e._tweens=[],e.REVISION="14",e.getAll=function(){return this._tweens},e.removeAll=function(){this._tweens=[]},e.add=function(t){this._tweens.push(t)},e.remove=function(t){var n=this._tweens.indexOf(t);-1!==n&&this._tweens.splice(n,1)},e.update=function(t){if(0===this._tweens.length)return!1;var n=0;for(t=t?t:"undefined"!=typeof window&&void 0!==window.performance&&void 0!==window.performance.now?window.performance.now():Date.now();n<this._tweens.length;)this._tweens[n].update(t)?n++:this._tweens.splice(n,1);return!0};var i=function(){function t(t){this._valuesStart={},this._valuesEnd={},this._valuesStartRepeat={},this._duration=1e3,this._repeat=0,this._yoyo=!1,this._isPlaying=!1,this._reversed=!1,this._delayTime=0,this._startTime=0/0,this._easingFunction=e.Easing.Linear.None,this._interpolationFunction=e.Interpolation.Linear,this._chainedTweens=[],this._onStartCallback=null,this._onStartCallbackFired=!1,this._onUpdateCallback=null,this._onCompleteCallback=null,this._onStopCallback=null,this._object=t;for(var n in t)this._valuesStart[n]=parseFloat(t[n])}return t.prototype.to=function(t,n){return void 0!==n&&(this._duration=n),this._valuesEnd=t,this},t.prototype.start=function(t){e.add(this),this._isPlaying=!0,this._onStartCallbackFired=!1,this._startTime=t?t:"undefined"!=typeof window&&void 0!==window.performance&&void 0!==window.performance.now?window.performance.now():Date.now(),this._startTime+=this._delayTime;for(var n in this._valuesEnd){if(this._valuesEnd[n]instanceof Array){if(0===this._valuesEnd[n].length)continue;this._valuesEnd[n]=[this._object[n]].concat(this._valuesEnd[n])}this._valuesStart[n]=this._object[n],this._valuesStart[n]instanceof Array==!1&&(this._valuesStart[n]*=1),this._valuesStartRepeat[n]=this._valuesStart[n]||0}return this},t.prototype.stop=function(){return this._isPlaying?(e.remove(this),this._isPlaying=!1,null!==this._onStopCallback&&this._onStopCallback.call(this._object),this.stopChainedTweens(),this):this},t.prototype.stopChainedTweens=function(){for(var t=0,n=this._chainedTweens.length;n>t;t++)this._chainedTweens[t].stop()},t.prototype.delay=function(t){return this._delayTime=t,this},t.prototype.repeat=function(t){return this._repeat=t,this},t.prototype.yoyo=function(t){return this._yoyo=t,this},t.prototype.easing=function(t){return this._easingFunction=t,this},t.prototype.interpolation=function(t){return this._interpolationFunction=t,this},t.prototype.chain=function(){for(var t=[],n=0;n<arguments.length-0;n++)t[n]=arguments[n+0];return this._chainedTweens=t,this},t.prototype.onStart=function(t){return this._onStartCallback=t,this},t.prototype.onUpdate=function(t){return this._onUpdateCallback=t,this},t.prototype.onComplete=function(t){return this._onCompleteCallback=t,this},t.prototype.onStop=function(t){return this._onStopCallback=t,this},t.prototype.update=function(t){var n;if(t<this._startTime)return!0;this._onStartCallbackFired===!1&&(null!==this._onStartCallback&&this._onStartCallback.call(this._object),this._onStartCallbackFired=!0);var e=(t-this._startTime)/this._duration;e=e>1?1:e;var i=this._easingFunction(e);for(n in this._valuesEnd){var r=this._valuesStart[n]||0,a=this._valuesEnd[n];a instanceof Array?this._object[n]=this._interpolationFunction(a,i):("string"==typeof a&&(a=r+parseFloat(a)),"number"==typeof a&&(this._object[n]=r+(a-r)*i))}if(null!==this._onUpdateCallback&&this._onUpdateCallback.call(this._object,i),1==e){if(this._repeat>0){isFinite(this._repeat)&&this._repeat--;for(n in this._valuesStartRepeat){if("string"==typeof this._valuesEnd[n]&&(this._valuesStartRepeat[n]=this._valuesStartRepeat[n]+parseFloat(this._valuesEnd[n])),this._yoyo){var o=this._valuesStartRepeat[n];this._valuesStartRepeat[n]=this._valuesEnd[n],this._valuesEnd[n]=o}this._valuesStart[n]=this._valuesStartRepeat[n]}return this._yoyo&&(this._reversed=!this._reversed),this._startTime=t+this._delayTime,!0}null!==this._onCompleteCallback&&this._onCompleteCallback.call(this._object);for(var s=0,u=this._chainedTweens.length;u>s;s++)this._chainedTweens[s].start(t);return!1}return!0},t}();e.Tween=i,e.Easing={Linear:{None:function(t){return t}},Quadratic:{In:function(t){return t*t},Out:function(t){return t*(2-t)},InOut:function(t){return(t*=2)<1?.5*t*t:-.5*(--t*(t-2)-1)}},Cubic:{In:function(t){return t*t*t},Out:function(t){return--t*t*t+1},InOut:function(t){return(t*=2)<1?.5*t*t*t:.5*((t-=2)*t*t+2)}},Quartic:{In:function(t){return t*t*t*t},Out:function(t){return 1- --t*t*t*t},InOut:function(t){return(t*=2)<1?.5*t*t*t*t:-.5*((t-=2)*t*t*t-2)}},Quintic:{In:function(t){return t*t*t*t*t},Out:function(t){return--t*t*t*t*t+1},InOut:function(t){return(t*=2)<1?.5*t*t*t*t*t:.5*((t-=2)*t*t*t*t+2)}},Sinusoidal:{In:function(t){return 1-Math.cos(t*Math.PI/2)},Out:function(t){return Math.sin(t*Math.PI/2)},InOut:function(t){return.5*(1-Math.cos(Math.PI*t))}},Exponential:{In:function(t){return 0===t?0:Math.pow(1024,t-1)},Out:function(t){return 1===t?1:1-Math.pow(2,-10*t)},InOut:function(t){return 0===t?0:1===t?1:(t*=2)<1?.5*Math.pow(1024,t-1):.5*(-Math.pow(2,-10*(t-1))+2)}},Circular:{In:function(t){return 1-Math.sqrt(1-t*t)},Out:function(t){return Math.sqrt(1- --t*t)},InOut:function(t){return(t*=2)<1?-.5*(Math.sqrt(1-t*t)-1):.5*(Math.sqrt(1-(t-=2)*t)+1)}},Elastic:{In:function(t){var n,e=.1,i=.4;return 0===t?0:1===t?1:(!e||1>e?(e=1,n=i/4):n=i*Math.asin(1/e)/(2*Math.PI),-(e*Math.pow(2,10*(t-=1))*Math.sin(2*(t-n)*Math.PI/i)))},Out:function(t){var n,e=.1,i=.4;return 0===t?0:1===t?1:(!e||1>e?(e=1,n=i/4):n=i*Math.asin(1/e)/(2*Math.PI),e*Math.pow(2,-10*t)*Math.sin(2*(t-n)*Math.PI/i)+1)},InOut:function(t){var n,e=.1,i=.4;return 0===t?0:1===t?1:(!e||1>e?(e=1,n=i/4):n=i*Math.asin(1/e)/(2*Math.PI),(t*=2)<1?-.5*e*Math.pow(2,10*(t-=1))*Math.sin(2*(t-n)*Math.PI/i):e*Math.pow(2,-10*(t-=1))*Math.sin(2*(t-n)*Math.PI/i)*.5+1)}},Back:{In:function(t){var n=1.70158;return t*t*((n+1)*t-n)},Out:function(t){var n=1.70158;return--t*t*((n+1)*t+n)+1},InOut:function(t){var n=2.5949095;return(t*=2)<1?.5*t*t*((n+1)*t-n):.5*((t-=2)*t*((n+1)*t+n)+2)}},Bounce:{In:function(t){return 1-TWEEN.Easing.Bounce.Out(1-t)},Out:function(t){return 1/2.75>t?7.5625*t*t:2/2.75>t?7.5625*(t-=1.5/2.75)*t+.75:2.5/2.75>t?7.5625*(t-=2.25/2.75)*t+.9375:7.5625*(t-=2.625/2.75)*t+.984375},InOut:function(t){return.5>t?.5*TWEEN.Easing.Bounce.In(2*t):.5*TWEEN.Easing.Bounce.Out(2*t-1)+.5}}},e.Interpolation={Linear:function(t,n){var e=t.length-1,i=e*n,r=Math.floor(i),a=TWEEN.Interpolation.Utils.Linear;return 0>n?a(t[0],t[1],i):n>1?a(t[e],t[e-1],e-i):a(t[r],t[r+1>e?e:r+1],i-r)},Bezier:function(t,n){var e,i=0,r=t.length-1,a=Math.pow,o=TWEEN.Interpolation.Utils.Bernstein;for(e=0;r>=e;e++)i+=a(1-n,r-e)*a(n,e)*t[e]*o(r,e);return i},CatmullRom:function(t,n){var e=t.length-1,i=e*n,r=Math.floor(i),a=TWEEN.Interpolation.Utils.CatmullRom;return t[0]===t[e]?(0>n&&(r=Math.floor(i=e*(1+n))),a(t[(r-1+e)%e],t[r],t[(r+1)%e],t[(r+2)%e],i-r)):0>n?t[0]-(a(t[0],t[0],t[1],t[1],-i)-t[0]):n>1?t[e]-(a(t[e],t[e],t[e-1],t[e-1],i-e)-t[e]):a(t[r?r-1:0],t[r],t[r+1>e?e:r+1],t[r+2>e?e:r+2],i-r)},Utils:{Linear:function(t,n,e){return(n-t)*e+t},Bernstein:function(t,n){var e=TWEEN.Interpolation.Utils.Factorial;return e(t)/e(n)/e(t-n)},Factorial:function(){var t=[1];return function(n){var e,i=1;if(t[n])return t[n];for(e=n;e>1;e--)i*=e;return t[n]=i}}(),CatmullRom:function(t,n,e,i,r){var a=.5*(e-t),o=.5*(i-n),s=r*r,u=r*s;return(2*n-2*e+a+o)*u+(-3*n+3*e-2*a-o)*s+a*r+n}}}},{}]},{},[1]);
+var __extends=this&&this.__extends||function(d,b){for(var p in b)if(b.hasOwnProperty(p))d[p]=b[p];function __(){this.constructor=d}d.prototype=b===null?Object.create(b):(__.prototype=b.prototype,new __)};var entitas;
+(function(entitas){var Exception=function(){function Exception(message){this.message=message}Exception.prototype.toString=function(){return this.message};return Exception}();entitas.Exception=Exception;var EntityAlreadyHasComponentException=function(_super){__extends(EntityAlreadyHasComponentException,_super);function EntityAlreadyHasComponentException(message,index){_super.call(this,message+"\nEntity already has a component at index "+index)}return EntityAlreadyHasComponentException}(Exception);
+entitas.EntityAlreadyHasComponentException=EntityAlreadyHasComponentException;var EntityDoesNotHaveComponentException=function(_super){__extends(EntityDoesNotHaveComponentException,_super);function EntityDoesNotHaveComponentException(message,index){_super.call(this,message+"\nEntity does not have a component at index "+index)}return EntityDoesNotHaveComponentException}(Exception);entitas.EntityDoesNotHaveComponentException=EntityDoesNotHaveComponentException;var EntityIsNotEnabledException=function(_super){__extends(EntityIsNotEnabledException,
+_super);function EntityIsNotEnabledException(message){_super.call(this,message+"\nEntity is not enabled")}return EntityIsNotEnabledException}(Exception);entitas.EntityIsNotEnabledException=EntityIsNotEnabledException;var EntityIsAlreadyReleasedException=function(_super){__extends(EntityIsAlreadyReleasedException,_super);function EntityIsAlreadyReleasedException(){_super.call(this,"Entity is already released!")}return EntityIsAlreadyReleasedException}(Exception);entitas.EntityIsAlreadyReleasedException=
+EntityIsAlreadyReleasedException;var SingleEntityException=function(_super){__extends(SingleEntityException,_super);function SingleEntityException(matcher){_super.call(this,"Multiple entities exist matching "+matcher)}return SingleEntityException}(Exception);entitas.SingleEntityException=SingleEntityException;var GroupObserverException=function(_super){__extends(GroupObserverException,_super);function GroupObserverException(message){_super.call(this,message)}return GroupObserverException}(Exception);
+entitas.GroupObserverException=GroupObserverException;var PoolDoesNotContainEntityException=function(_super){__extends(PoolDoesNotContainEntityException,_super);function PoolDoesNotContainEntityException(entity,message){_super.call(this,message+"\nPool does not contain entity "+entity)}return PoolDoesNotContainEntityException}(Exception);entitas.PoolDoesNotContainEntityException=PoolDoesNotContainEntityException;var EntityIsNotDestroyedException=function(_super){__extends(EntityIsNotDestroyedException,
+_super);function EntityIsNotDestroyedException(message){_super.call(this,message+"\nEntity is not destroyed yet!")}return EntityIsNotDestroyedException}(Exception);entitas.EntityIsNotDestroyedException=EntityIsNotDestroyedException;var MatcherException=function(_super){__extends(MatcherException,_super);function MatcherException(matcher){_super.call(this,"matcher.indices.length must be 1 but was "+matcher.indices.length)}return MatcherException}(Exception);entitas.MatcherException=MatcherException})(entitas||
+(entitas={}));var entitas;
+(function(entitas){var Signal=function(){function Signal(context,alloc){if(alloc===void 0)alloc=16;this._listeners=[];this._context=context;this._alloc=alloc;this._size=0}Signal.prototype.dispatch=function(){var args=[];for(var _i=0;_i<arguments.length;_i++)args[_i-0]=arguments[_i];var listeners=this._listeners;var size=listeners.length;var context=this._context;for(var i=0;i<size;i++)listeners[i].apply(context,args)};Signal.prototype.add=function(listener){this._listeners.push(listener)};Signal.prototype.remove=
+function(listener){var listeners=this._listeners;var index=listeners.indexOf(listener);if(index!==-1)listeners.splice(index,1)};Signal.prototype.clear=function(){this._listeners.length=0};return Signal}();entitas.Signal=Signal})(entitas||(entitas={}));var entitas;
+(function(entitas){var MatcherException=entitas.MatcherException;var Matcher=function(){function Matcher(){this._id=Matcher.uniqueId++}Object.defineProperty(Matcher.prototype,"id",{get:function(){return this._id},enumerable:true,configurable:true});Object.defineProperty(Matcher.prototype,"indices",{get:function(){if(!this._indices)this._indices=this.mergeIndices();return this._indices},enumerable:true,configurable:true});Object.defineProperty(Matcher.prototype,"allOfIndices",{get:function(){return this._allOfIndices},
+enumerable:true,configurable:true});Object.defineProperty(Matcher.prototype,"anyOfIndices",{get:function(){return this._anyOfIndices},enumerable:true,configurable:true});Object.defineProperty(Matcher.prototype,"noneOfIndices",{get:function(){return this._noneOfIndices},enumerable:true,configurable:true});Matcher.prototype.anyOf=function(){var args=[];for(var _i=0;_i<arguments.length;_i++)args[_i-0]=arguments[_i];if("number"===typeof args[0]||"string"===typeof args[0]){this._anyOfIndices=Matcher.distinctIndices(args);
+this._indices=undefined;return this}else return this.anyOf.apply(this,Matcher.mergeIndices(args))};Matcher.prototype.noneOf=function(){var args=[];for(var _i=0;_i<arguments.length;_i++)args[_i-0]=arguments[_i];if("number"===typeof args[0]||"string"===typeof args[0]){this._noneOfIndices=Matcher.distinctIndices(args);this._indices=undefined;return this}else return this.noneOf.apply(this,Matcher.mergeIndices(args))};Matcher.prototype.matches=function(entity){var matchesAllOf=this._allOfIndices===undefined||
+entity.hasComponents(this._allOfIndices);var matchesAnyOf=this._anyOfIndices===undefined||entity.hasAnyComponent(this._anyOfIndices);var matchesNoneOf=this._noneOfIndices===undefined||!entity.hasAnyComponent(this._noneOfIndices);return matchesAllOf&&matchesAnyOf&&matchesNoneOf};Matcher.prototype.mergeIndices=function(){var indicesList=[];if(this._allOfIndices!==undefined)indicesList=indicesList.concat(this._allOfIndices);if(this._anyOfIndices!==undefined)indicesList=indicesList.concat(this._anyOfIndices);
+if(this._noneOfIndices!==undefined)indicesList=indicesList.concat(this._noneOfIndices);return Matcher.distinctIndices(indicesList)};Matcher.prototype.toString=function(){if(this._toStringCache===undefined){var sb=[];if(this._allOfIndices!==undefined)Matcher.appendIndices(sb,"AllOf",this._allOfIndices);if(this._anyOfIndices!==undefined){if(this._allOfIndices!==undefined)sb.push(".");Matcher.appendIndices(sb,"AnyOf",this._anyOfIndices)}if(this._noneOfIndices!==undefined)Matcher.appendIndices(sb,".NoneOf",
+this._noneOfIndices);this._toStringCache=sb.join("")}return this._toStringCache};Matcher.prototype.equals=function(obj){if(obj==null||obj===undefined)return false;var matcher=obj;if(!Matcher.equalIndices(matcher.allOfIndices,this._allOfIndices))return false;if(!Matcher.equalIndices(matcher.anyOfIndices,this._anyOfIndices))return false;if(!Matcher.equalIndices(matcher.noneOfIndices,this._noneOfIndices))return false;return true};Matcher.equalIndices=function(i1,i2){if(i1===undefined!=(i2===undefined))return false;
+if(i1===undefined)return true;if(i1.length!==i2.length)return false;for(var i=0,indicesLength=i1.length;i<indicesLength;i++)if(i1[i]!=i2[i])return false;return true};Matcher.distinctIndices=function(indices){var indicesSet={};for(var i=0,l=indices.length;i<l;i++){var k=""+indices[i];indicesSet[k]=i}return[].concat(Object.keys(indicesSet))};Matcher.mergeIndices=function(matchers){var indices=[];for(var i=0,matchersLength=matchers.length;i<matchersLength;i++){var matcher=matchers[i];if(matcher.indices.length!==
+1)throw new MatcherException(matcher);indices[i]=matcher.indices[0]}return indices};Matcher.allOf=function(){var args=[];for(var _i=0;_i<arguments.length;_i++)args[_i-0]=arguments[_i];if("number"===typeof args[0]||"string"===typeof args[0]){var matcher=new Matcher;matcher._allOfIndices=Matcher.distinctIndices(args);return matcher}else return Matcher.allOf.apply(this,Matcher.mergeIndices(args))};Matcher.anyOf=function(){var args=[];for(var _i=0;_i<arguments.length;_i++)args[_i-0]=arguments[_i];if("number"===
+typeof args[0]||"string"===typeof args[0]){var matcher=new Matcher;matcher._anyOfIndices=Matcher.distinctIndices(args);return matcher}else return Matcher.anyOf.apply(this,Matcher.mergeIndices(args))};Matcher.appendIndices=function(sb,prefix,indexArray){var SEPERATOR=", ";sb.push(prefix);sb.push("(");var lastSeperator=indexArray.length-1;for(var i=0,indicesLength=indexArray.length;i<indicesLength;i++){sb.push(""+indexArray[i]);if(i<lastSeperator)sb.push(SEPERATOR)}sb.push(")")};Matcher.uniqueId=0;
+return Matcher}();entitas.Matcher=Matcher})(entitas||(entitas={}));var entitas;(function(entitas){var TriggerOnEvent=function(){function TriggerOnEvent(trigger,eventType){this.trigger=trigger;this.eventType=eventType}return TriggerOnEvent}();entitas.TriggerOnEvent=TriggerOnEvent})(entitas||(entitas={}));var entitas;
+(function(entitas){var Signal=entitas.Signal;var EntityIsNotEnabledException=entitas.EntityIsNotEnabledException;var EntityIsAlreadyReleasedException=entitas.EntityIsAlreadyReleasedException;var EntityAlreadyHasComponentException=entitas.EntityAlreadyHasComponentException;var EntityDoesNotHaveComponentException=entitas.EntityDoesNotHaveComponentException;var Entity=function(){function Entity(totalComponents){if(totalComponents===void 0)totalComponents=16;this._creationIndex=0;this._isEnabled=true;
+this._refCount=0;this.onEntityReleased=new Signal(this);this.onComponentAdded=new Signal(this);this.onComponentRemoved=new Signal(this);this.onComponentReplaced=new Signal(this);this._components=new Array(totalComponents)}Object.defineProperty(Entity.prototype,"creationIndex",{get:function(){return this._creationIndex},enumerable:true,configurable:true});Entity.prototype.addComponent=function(index,component){if(!this._isEnabled)throw new EntityIsNotEnabledException("Cannot add component!");if(this.hasComponent(index)){var errorMsg=
+"Cannot add component at index "+index+" to "+this;throw new EntityAlreadyHasComponentException(errorMsg,index);}this._components[index]=component;this._componentsCache=undefined;this._componentIndicesCache=undefined;this._toStringCache=undefined;this.onComponentAdded.dispatch(this,index,component);return this};Entity.prototype.removeComponent=function(index){if(!this._isEnabled)throw new EntityIsNotEnabledException("Cannot remove component!");if(!this.hasComponent(index)){var errorMsg="Cannot remove component at index "+
+index+" from "+this;throw new EntityDoesNotHaveComponentException(errorMsg,index);}this._replaceComponent(index,undefined);return this};Entity.prototype.replaceComponent=function(index,component){if(!this._isEnabled)throw new EntityIsNotEnabledException("Cannot replace component!");if(this.hasComponent(index))this._replaceComponent(index,component);else if(component!==undefined)this.addComponent(index,component);return this};Entity.prototype._replaceComponent=function(index,replacement){var previousComponent=
+this._components[index];if(previousComponent===replacement)this.onComponentReplaced.dispatch(this,index,previousComponent,replacement);else{this._components[index]=replacement;this._componentsCache=undefined;if(replacement===undefined){delete this._components[index];this._componentIndicesCache=undefined;this._toStringCache=undefined;this.onComponentRemoved.dispatch(this,index,previousComponent)}else this.onComponentReplaced.dispatch(this,index,previousComponent,replacement)}};Entity.prototype.getComponent=
+function(index){if(!this.hasComponent(index)){var errorMsg="Cannot get component at index "+index+" from "+this;throw new EntityDoesNotHaveComponentException(errorMsg,index);}return this._components[index]};Entity.prototype.getComponents=function(){if(this._componentsCache===undefined){var components=[];for(var i=0,componentsLength=this._components.length;i<componentsLength;i++){var component=this._components[i];if(component!==undefined)components.push(component)}this._componentsCache=components}return this._componentsCache};
+Entity.prototype.getComponentIndices=function(){if(this._componentIndicesCache===undefined){var indices=[];for(var i=0,componentsLength=this._components.length;i<componentsLength;i++)if(this._components[i]!==undefined)indices.push(i);this._componentIndicesCache=indices}return this._componentIndicesCache};Entity.prototype.hasComponent=function(index){return this._components[index]!==undefined};Entity.prototype.hasComponents=function(indices){for(var i=0,indicesLength=indices.length;i<indicesLength;i++)if(this._components[indices[i]]===
+undefined)return false;return true};Entity.prototype.hasAnyComponent=function(indices){for(var i=0,indicesLength=indices.length;i<indicesLength;i++)if(this._components[indices[i]]!==undefined)return true;return false};Entity.prototype.removeAllComponents=function(){this._toStringCache=undefined;for(var i=0,componentsLength=this._components.length;i<componentsLength;i++)if(this._components[i]!==undefined)this._replaceComponent(i,undefined)};Entity.prototype.destroy=function(){this.removeAllComponents();
+this.onComponentAdded.clear();this.onComponentReplaced.clear();this.onComponentRemoved.clear();this._isEnabled=false};Entity.prototype.toString=function(){if(this._toStringCache===undefined){var sb=[];sb.push("Entity_");sb.push(this._creationIndex);sb.push("(");var seperator=", ";var components=this.getComponents();var lastSeperator=components.length-1;for(var i=0,componentsLength=components.length;i<componentsLength;i++){sb.push(this._componentsEnum[i]);if(i<lastSeperator)sb.push(seperator)}sb.push(")");
+this._toStringCache=sb.join("")}return this._toStringCache};Entity.prototype.addRef=function(){this._refCount+=1;return this};Entity.prototype.release=function(){this._refCount-=1;if(this._refCount===0)this.onEntityReleased.dispatch(this);else if(this._refCount<0)throw new EntityIsAlreadyReleasedException;};return Entity}();entitas.Entity=Entity})(entitas||(entitas={}));var entitas;
+(function(entitas){var Signal=entitas.Signal;var SingleEntityException=entitas.SingleEntityException;var Group=function(){function Group(matcher){this._entities={};this.onEntityAdded=new Signal(this);this.onEntityRemoved=new Signal(this);this.onEntityUpdated=new Signal(this);this._matcher=matcher}Object.defineProperty(Group.prototype,"count",{get:function(){return Object.keys(this._entities).length},enumerable:true,configurable:true});Object.defineProperty(Group.prototype,"matcher",{get:function(){return this._matcher},
+enumerable:true,configurable:true});Group.prototype.handleEntitySilently=function(entity){if(this._matcher.matches(entity))this.addEntitySilently(entity);else this.removeEntitySilently(entity)};Group.prototype.handleEntity=function(entity,index,component){if(this._matcher.matches(entity))this.addEntity(entity,index,component);else this.removeEntity(entity,index,component)};Group.prototype.updateEntity=function(entity,index,previousComponent,newComponent){if(entity.creationIndex in this._entities){this.onEntityRemoved.dispatch(this,
+entity,index,previousComponent);this.onEntityAdded.dispatch(this,entity,index,newComponent);this.onEntityUpdated.dispatch(this,entity,index,previousComponent,newComponent)}};Group.prototype.addEntitySilently=function(entity){if(!(entity.creationIndex in this._entities)){this._entities[entity.creationIndex]=entity;this._entitiesCache=undefined;this._singleEntityCache=undefined;entity.addRef()}};Group.prototype.addEntity=function(entity,index,component){if(!(entity.creationIndex in this._entities)){this._entities[entity.creationIndex]=
+entity;this._entitiesCache=undefined;this._singleEntityCache=undefined;entity.addRef();this.onEntityAdded.dispatch(this,entity,index,component)}};Group.prototype.removeEntitySilently=function(entity){if(entity.creationIndex in this._entities){delete this._entities[entity.creationIndex];this._entitiesCache=undefined;this._singleEntityCache=undefined;entity.release()}};Group.prototype.removeEntity=function(entity,index,component){if(entity.creationIndex in this._entities){delete this._entities[entity.creationIndex];
+this._entitiesCache=undefined;this._singleEntityCache=undefined;this.onEntityRemoved.dispatch(this,entity,index,component);entity.release()}};Group.prototype.containsEntity=function(entity){return entity.creationIndex in this._entities};Group.prototype.getEntities=function(){if(this._entitiesCache===undefined){this._entitiesCache=[];for(var k in this._entities)this._entitiesCache.push(this._entities[k])}return this._entitiesCache};Group.prototype.getSingleEntity=function(){if(this._singleEntityCache===
+undefined){var enumerator=Object.keys(this._entities);var c=enumerator.length;if(c===1)this._singleEntityCache=this._entities[enumerator[0]];else if(c===0)return undefined;else throw new SingleEntityException(this._matcher);}return this._singleEntityCache};Group.prototype.toString=function(){if(this._toStringCache===undefined)this._toStringCache="Group("+this._matcher+")";return this._toStringCache};return Group}();entitas.Group=Group})(entitas||(entitas={}));var entitas;
+(function(entitas){var GroupObserverException=entitas.GroupObserverException;(function(GroupEventType){GroupEventType[GroupEventType["OnEntityAdded"]=0]="OnEntityAdded";GroupEventType[GroupEventType["OnEntityRemoved"]=1]="OnEntityRemoved";GroupEventType[GroupEventType["OnEntityAddedOrRemoved"]=2]="OnEntityAddedOrRemoved"})(entitas.GroupEventType||(entitas.GroupEventType={}));var GroupEventType=entitas.GroupEventType;var GroupObserver=function(){function GroupObserver(groups,eventTypes){var _this=
+this;this._collectedEntities={};this.addEntity=function(group,entity,index,component){if(!(entity.creationIndex in _this._collectedEntities)){_this._collectedEntities[entity.creationIndex]=entity;entity.addRef()}};this._groups=Array.isArray(groups)?groups:[groups];this._eventTypes=Array.isArray(eventTypes)?eventTypes:[eventTypes];if(groups.length!==eventTypes.length)throw new GroupObserverException("Unbalanced count with groups ("+groups.length+") and event types ("+eventTypes.length+")");this._collectedEntities=
+{};this._addEntityCache=this.addEntity;this.activate()}Object.defineProperty(GroupObserver.prototype,"collectedEntities",{get:function(){return this._collectedEntities},enumerable:true,configurable:true});GroupObserver.prototype.activate=function(){for(var i=0,groupsLength=this._groups.length;i<groupsLength;i++){var group=this._groups[i];var eventType=this._eventTypes[i];if(eventType===GroupEventType.OnEntityAdded){group.onEntityAdded.remove(this._addEntityCache);group.onEntityAdded.add(this._addEntityCache)}else if(eventType===
+GroupEventType.OnEntityRemoved){group.onEntityRemoved.remove(this._addEntityCache);group.onEntityRemoved.add(this._addEntityCache)}else if(eventType===GroupEventType.OnEntityAddedOrRemoved){group.onEntityAdded.remove(this._addEntityCache);group.onEntityAdded.add(this._addEntityCache);group.onEntityRemoved.remove(this._addEntityCache);group.onEntityRemoved.add(this._addEntityCache)}else throw"Invalid eventType ["+typeof eventType+":"+eventType+"] in GroupObserver::activate";}};GroupObserver.prototype.deactivate=
+function(){var e;for(var i=0,groupsLength=this._groups.length;i<groupsLength;i++){var group=this._groups[i];group.onEntityAdded.remove(this._addEntityCache);group.onEntityRemoved.remove(this._addEntityCache);this.clearCollectedEntities()}};GroupObserver.prototype.clearCollectedEntities=function(){for(var e in this._collectedEntities)this._collectedEntities[e].release();this._collectedEntities={}};return GroupObserver}();entitas.GroupObserver=GroupObserver})(entitas||(entitas={}));var entitas;
+(function(entitas){var Group=entitas.Group;var Entity=entitas.Entity;var EntityIsNotDestroyedException=entitas.EntityIsNotDestroyedException;var PoolDoesNotContainEntityException=entitas.PoolDoesNotContainEntityException;var Pool=function(){function Pool(components,totalComponents,startCreationIndex){var _this=this;if(startCreationIndex===void 0)startCreationIndex=0;this._entities={};this._groups={};this._reusableEntities=[];this._retainedEntities={};this._totalComponents=0;this._creationIndex=0;
+this.updateGroupsComponentAddedOrRemoved=function(entity,index,component){var groups=_this._groupsForIndex[index];if(groups!==undefined)for(var i=0,groupsCount=groups.length;i<groupsCount;i++)groups[i].handleEntity(entity,index,component)};this.updateGroupsComponentReplaced=function(entity,index,previousComponent,newComponent){var groups=_this._groupsForIndex[index];if(groups!==undefined)for(var i=0,groupsCount=groups.length;i<groupsCount;i++)groups[i].updateEntity(entity,index,previousComponent,
+newComponent)};this.onEntityReleased=function(entity){if(entity._isEnabled)throw new EntityIsNotDestroyedException("Cannot release entity.");entity.onEntityReleased.remove(_this._cachedOnEntityReleased);delete _this._retainedEntities[entity.creationIndex];_this._reusableEntities.push(entity)};this.onGroupCreated=new entitas.Signal(this);this.onEntityCreated=new entitas.Signal(this);this.onEntityDestroyed=new entitas.Signal(this);this.onEntityWillBeDestroyed=new entitas.Signal(this);this._componentsEnum=
+components;this._totalComponents=totalComponents;this._creationIndex=startCreationIndex;this._groupsForIndex=[];this._cachedUpdateGroupsComponentAddedOrRemoved=this.updateGroupsComponentAddedOrRemoved;this._cachedUpdateGroupsComponentReplaced=this.updateGroupsComponentReplaced;this._cachedOnEntityReleased=this.onEntityReleased;Pool.componentsEnum=components;Pool.totalComponents=totalComponents}Object.defineProperty(Pool.prototype,"totalComponents",{get:function(){return this._totalComponents},enumerable:true,
+configurable:true});Object.defineProperty(Pool.prototype,"count",{get:function(){return Object.keys(this._entities).length},enumerable:true,configurable:true});Object.defineProperty(Pool.prototype,"reusableEntitiesCount",{get:function(){return this._reusableEntities.length},enumerable:true,configurable:true});Object.defineProperty(Pool.prototype,"retainedEntitiesCount",{get:function(){return Object.keys(this._retainedEntities).length},enumerable:true,configurable:true});Pool.groupDesc=function(group){var s=
+group.toString();for(var c=Pool.totalComponents;c>-1;c--)s=s.replace(""+c,Pool.componentsEnum[c]);return s};Pool.prototype.createEntity=function(name){var entity=this._reusableEntities.length>0?this._reusableEntities.pop():new Entity(this._totalComponents);entity._isEnabled=true;entity.name=name;entity._creationIndex=this._creationIndex++;entity.addRef();this._entities[entity.creationIndex]=entity;this._entitiesCache=undefined;entity.onComponentAdded.add(this._cachedUpdateGroupsComponentAddedOrRemoved);
+entity.onComponentRemoved.add(this._cachedUpdateGroupsComponentAddedOrRemoved);entity.onComponentReplaced.add(this._cachedUpdateGroupsComponentReplaced);entity.onEntityReleased.add(this._cachedOnEntityReleased);this.onEntityCreated.dispatch(this,entity);return entity};Pool.prototype.destroyEntity=function(entity){if(!(entity.creationIndex in this._entities))throw new PoolDoesNotContainEntityException(entity,"Could not destroy entity!");delete this._entities[entity.creationIndex];this._entitiesCache=
+undefined;this.onEntityWillBeDestroyed.dispatch(this,entity);entity.destroy();this.onEntityDestroyed.dispatch(this,entity);if(entity._refCount===1){entity.onEntityReleased.remove(this._cachedOnEntityReleased);this._reusableEntities.push(entity)}else this._retainedEntities[entity.creationIndex]=entity;entity.release()};Pool.prototype.destroyAllEntities=function(){var entities=this.getEntities();for(var i=0,entitiesLength=entities.length;i<entitiesLength;i++)this.destroyEntity(entities[i])};Pool.prototype.hasEntity=
+function(entity){return entity.creationIndex in this._entities};Pool.prototype.getEntities=function(){if(this._entitiesCache===undefined){this._entitiesCache=[];for(var k in Object.keys(this._entities))this._entitiesCache.push(this._entities[k])}return this._entitiesCache};Pool.prototype.getGroup=function(matcher){var group;if(matcher.id in this._groups)group=this._groups[matcher.id];else{group=new Group(matcher);var entities=this.getEntities();for(var i=0,entitiesLength=entities.length;i<entitiesLength;i++)group.handleEntitySilently(entities[i]);
+this._groups[matcher.id]=group;for(var i=0,indicesLength=matcher.indices.length;i<indicesLength;i++){var index=matcher.indices[i];if(this._groupsForIndex[index]===undefined)this._groupsForIndex[index]=[];this._groupsForIndex[index].push(group)}this.onGroupCreated.dispatch(this,group)}return group};Pool.totalComponents=0;return Pool}();entitas.Pool=Pool})(entitas||(entitas={}));var entitas;
+(function(entitas){var GroupObserver=entitas.GroupObserver;function as(obj,method1){return method1 in obj?obj:null}var ReactiveSystem=function(){function ReactiveSystem(pool,subSystem){var triggers="triggers"in subSystem?subSystem["triggers"]:[subSystem["trigger"]];this._subsystem=subSystem;var ensureComponents=as(subSystem,"ensureComponents");if(ensureComponents!=null)this._ensureComponents=ensureComponents.ensureComponents;var excludeComponents=as(subSystem,"excludeComponents");if(excludeComponents!=
+null)this._excludeComponents=excludeComponents.excludeComponents;this._clearAfterExecute=as(subSystem,"clearAfterExecute")!=null;var triggersLength=triggers.length;var groups=new Array(triggersLength);var eventTypes=new Array(triggersLength);for(var i=0;i<triggersLength;i++){var trigger=triggers[i];groups[i]=pool.getGroup(trigger.trigger);eventTypes[i]=trigger.eventType}this._observer=new GroupObserver(groups,eventTypes);this._buffer=[]}Object.defineProperty(ReactiveSystem.prototype,"subsystem",{get:function(){return this._subsystem},
+enumerable:true,configurable:true});ReactiveSystem.prototype.activate=function(){this._observer.activate()};ReactiveSystem.prototype.deactivate=function(){this._observer.deactivate()};ReactiveSystem.prototype.clear=function(){this._observer.clearCollectedEntities()};ReactiveSystem.prototype.execute=function(){var collectedEntities=this._observer.collectedEntities;var ensureComponents=this._ensureComponents;var excludeComponents=this._excludeComponents;var buffer=this._buffer;if(Object.keys(collectedEntities).length!=
+0){if(ensureComponents)if(excludeComponents)for(var k in collectedEntities){var e=collectedEntities[k];if(ensureComponents.matches(e)&&!excludeComponents.matches(e))buffer.push(e.addRef())}else for(var k in collectedEntities){var e=collectedEntities[k];if(ensureComponents.matches(e))buffer.push(e.addRef())}else if(excludeComponents)for(var k in collectedEntities){var e=collectedEntities[k];if(!excludeComponents.matches(e))buffer.push(e.addRef())}else for(var k in collectedEntities){var e=collectedEntities[k];
+buffer.push(e.addRef())}this._observer.clearCollectedEntities();if(buffer.length!=0){this._subsystem.execute(buffer);for(var i=0,bufferCount=buffer.length;i<bufferCount;i++)buffer[i].release();buffer.length=0;if(this._clearAfterExecute)this._observer.clearCollectedEntities()}}};return ReactiveSystem}();entitas.ReactiveSystem=ReactiveSystem})(entitas||(entitas={}));var entitas;
+(function(entitas){function as(obj,method1){return method1 in obj?obj:null}(function(SystemType){SystemType[SystemType["IInitializeSystem"]=1]="IInitializeSystem";SystemType[SystemType["IExecuteSystem"]=2]="IExecuteSystem";SystemType[SystemType["IReactiveExecuteSystem"]=4]="IReactiveExecuteSystem";SystemType[SystemType["IMultiReactiveSystem"]=8]="IMultiReactiveSystem";SystemType[SystemType["IReactiveSystem"]=16]="IReactiveSystem";SystemType[SystemType["IEnsureComponents"]=32]="IEnsureComponents";
+SystemType[SystemType["IExcludeComponents"]=64]="IExcludeComponents";SystemType[SystemType["IClearReactiveSystem"]=128]="IClearReactiveSystem"})(entitas.SystemType||(entitas.SystemType={}));var SystemType=entitas.SystemType;var Systems=function(){function Systems(){this._initializeSystems=[];this._executeSystems=[]}Systems.prototype.add=function(system){if("function"===typeof system){var Klass=system;system=new Klass}var reactiveSystem=as(system,"subsystem");var initializeSystem=reactiveSystem!=null?
+as(reactiveSystem.subsystem,"initialize"):as(system,"initialize");if(initializeSystem!=null)this._initializeSystems.push(initializeSystem);var executeSystem=as(system,"execute");if(executeSystem!=null)this._executeSystems.push(executeSystem);return this};Systems.prototype.initialize=function(){for(var i=0,initializeSysCount=this._initializeSystems.length;i<initializeSysCount;i++)this._initializeSystems[i].initialize()};Systems.prototype.execute=function(){var executeSystems=this._executeSystems;for(var i=
+0,exeSysCount=executeSystems.length;i<exeSysCount;i++)executeSystems[i].execute()};Systems.prototype.clearReactiveSystems=function(){for(var i=0,exeSysCount=this._executeSystems.length;i<exeSysCount;i++){var reactiveSystem=as(this._executeSystems[i],"subsystem");if(reactiveSystem!=null)reactiveSystem.clear();var nestedSystems=as(this._executeSystems[i],"clearReactiveSystems");if(nestedSystems!=null)nestedSystems.clearReactiveSystems()}};return Systems}();entitas.Systems=Systems})(entitas||(entitas=
+{}));var __extends=this&&this.__extends||function(d,b){for(var p in b)if(b.hasOwnProperty(p))d[p]=b[p];function __(){this.constructor=d}d.prototype=b===null?Object.create(b):(__.prototype=b.prototype,new __)};var entitas;
+(function(entitas){var extensions;(function(extensions){var Exception=entitas.Exception;var Collection=function(_super){__extends(Collection,_super);function Collection($0){_super.call(this,$0)}Collection.prototype.singleEntity=function(){if(this.length!==1)throw new Exception("Expected exactly one entity but found "+this.length);return this[0]};return Collection}(Array);extensions.Collection=Collection})(extensions=entitas.extensions||(entitas.extensions={}))})(entitas||(entitas={}));var entitas;
+(function(entitas){var extensions;(function(extensions){var GroupEventType=entitas.GroupEventType;var GroupObserver=entitas.GroupObserver;entitas.Group.prototype.createObserver=function(eventType){if(eventType===void 0)eventType=GroupEventType.OnEntityAdded;return new GroupObserver(this,eventType)}})(extensions=entitas.extensions||(entitas.extensions={}))})(entitas||(entitas={}));var entitas;
+(function(entitas){var extensions;(function(extensions){var Matcher=entitas.Matcher;var GroupEventType=entitas.GroupEventType;var TriggerOnEvent=entitas.TriggerOnEvent;Matcher.prototype.onEntityAdded=function(){return new TriggerOnEvent(this,GroupEventType.OnEntityAdded)};Matcher.prototype.onEntityRemoved=function(){return new TriggerOnEvent(this,GroupEventType.OnEntityRemoved)};Matcher.prototype.onEntityAddedOrRemoved=function(){return new TriggerOnEvent(this,GroupEventType.OnEntityAddedOrRemoved)}})(extensions=
+entitas.extensions||(entitas.extensions={}))})(entitas||(entitas={}));var entitas;
+(function(entitas){var extensions;(function(extensions){function as(obj,method1){return method1 in obj?obj:null}entitas.Pool.prototype.getEntities=function(matcher){if(matcher)return this.getGroup(matcher).getEntities();else{if(this._entitiesCache===undefined){this._entitiesCache=[];for(var k in Object.keys(this._entities))this._entitiesCache.push(this._entities[k])}return this._entitiesCache}};entitas.Pool.prototype.createSystem=function(system){if("function"===typeof system){var Klass=system;system=
+new Klass}entitas.Pool.setPool(system,this);var reactiveSystem=as(system,"trigger");if(reactiveSystem!=null)return new entitas.ReactiveSystem(this,reactiveSystem);var multiReactiveSystem=as(system,"triggers");if(multiReactiveSystem!=null)return new entitas.ReactiveSystem(this,multiReactiveSystem);return system};entitas.Pool.setPool=function(system,pool){var poolSystem=as(system,"setPool");if(poolSystem!=null)poolSystem.setPool(pool)}})(extensions=entitas.extensions||(entitas.extensions={}))})(entitas||
+(entitas={}));
+
+var bosco;
+(function (bosco) {
+    var utils;
+    (function (utils) {
+        var Input = (function () {
+            function Input() {
+                var _this = this;
+                this.states = {};
+                this.mouseDown = false;
+                this.mouseButtonDown = false;
+                this.mousePosition = { x: 0, y: 0 };
+                this.isDown = function (keyCode) { return _this.states[keyCode]; };
+                this.isUp = function (keyCode) { return !_this.states[keyCode]; };
+                this.onKeyUp = function (event) {
+                    if (_this.states[event.keyCode])
+                        _this.states[event.keyCode] = false;
+                };
+                this.onKeyDown = function (event) {
+                    _this.states[event.keyCode] = true;
+                };
+                this.onTouchStart = function (event) {
+                    event = event.targetTouches ? event.targetTouches[0] : event;
+                    _this.mouseDown = true;
+                    _this.mouseButtonDown = true;
+                    _this.mousePosition.x = parseInt(event.clientX);
+                    _this.mousePosition.y = parseInt(event.clientY);
                     return true;
+                };
+                this.onTouchMove = function (event) {
+                    event = event.targetTouches ? event.targetTouches[0] : event;
+                    _this.mousePosition.x = parseInt(event.clientX);
+                    _this.mousePosition.y = parseInt(event.clientY);
+                };
+                this.onTouchEnd = function (event) {
+                    _this.mouseDown = false;
+                    _this.mouseButtonDown = false;
+                };
+                document.addEventListener('touchstart', this.onTouchStart, true);
+                document.addEventListener('touchmove', this.onTouchMove, true);
+                document.addEventListener('touchend', this.onTouchEnd, true);
+                document.addEventListener('mousedown', this.onTouchStart, true);
+                document.addEventListener('mousemove', this.onTouchMove, true);
+                document.addEventListener('mouseup', this.onTouchEnd, true);
+                window.addEventListener('keydown', this.onKeyDown, true);
+                window.addEventListener('keyup', this.onKeyUp, true);
+            }
+            Object.defineProperty(Input, "mousePosition", {
+                get: function () {
+                    return Input._input.mousePosition;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Input.getKeyDown = function (k) {
+                return Input._input.isDown(k.charCodeAt(0));
+            };
+            Input.getKeyUp = function (k) {
+                return Input._input.isUp(k.charCodeAt(0));
+            };
+            Input.getMouseButtonUp = function (m) {
+                return !Input._input.mouseButtonDown;
+            };
+            Input.getMouseButton = function (m) {
+                return Input._input.mouseDown;
+            };
+            Input.getMouseButtonDown = function (m) {
+                return Input._input.mouseButtonDown;
+            };
+            Input.update = function () {
+                Input._input.mouseDown = false;
+                Input._input.states = {};
+            };
+            Input._input = new Input();
+            return Input;
+        })();
+        utils.Input = Input;
+    })(utils = bosco.utils || (bosco.utils = {}));
+})(bosco || (bosco = {}));
+//# sourceMappingURL=Input.js.map
+var bosco;
+(function (bosco) {
+    var utils;
+    (function (utils) {
+        var Rnd = (function () {
+            function Rnd() {
+            }
+            Rnd.nextBool = function () {
+                return ((~~(Math.random() * 32767)) & 1) === 1;
+            };
+            /*
+             * Generates a random real value from 0.0, inclusive, to 1.0, exclusive.
+            */
+            Rnd.nextDouble = function () {
+                return Math.random();
+            };
+            /*
+             * Generates a random int value from 0, inclusive, to max, exclusive.
+            */
+            Rnd.nextInt = function (max) {
+                return ~~(Math.random() * max);
+            };
+            Rnd.random = function (start, end) {
+                if (end === undefined) {
+                    return Rnd.nextInt(start + 1);
                 }
-            }
-            return false;
-        };
-        Entity.prototype.removeAllComponents = function () {
-            this._toStringCache = undefined;
-            for (var i = 0, componentsLength = this._components.length; i < componentsLength; i++) {
-                if (this._components[i] !== undefined) {
-                    this._replaceComponent(i, undefined);
-                }
-            }
-        };
-        Entity.prototype.destroy = function () {
-            this.removeAllComponents();
-            this.onComponentAdded.clear();
-            this.onComponentReplaced.clear();
-            this.onComponentRemoved.clear();
-            this._isEnabled = false;
-        };
-        Entity.prototype.toString = function () {
-            if (this._toStringCache === undefined) {
-                var sb = [];
-                sb.push("Entity_");
-                sb.push(this._creationIndex);
-                sb.push("(");
-                var seperator = ", ";
-                var components = this.getComponents();
-                var lastSeperator = components.length - 1;
-                for (var i = 0, componentsLength = components.length; i < componentsLength; i++) {
-                    sb.push(this._componentsEnum[i]);
-                    if (i < lastSeperator) {
-                        sb.push(seperator);
-                    }
-                }
-                sb.push(")");
-                this._toStringCache = sb.join('');
-            }
-            return this._toStringCache;
-        };
-        Entity.prototype.addRef = function () {
-            this._refCount += 1;
-            return this;
-        };
-        Entity.prototype.release = function () {
-            this._refCount -= 1;
-            if (this._refCount === 0) {
-                this.onEntityReleased.dispatch(this);
-            }
-            else if (this._refCount < 0) {
-                throw new EntityIsAlreadyReleasedException();
-            }
-        };
-        return Entity;
-    })();
-    entitas.Entity = Entity;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=Entity.js.map
-var entitas;
-(function (entitas) {
-    var Signal = entitas.Signal;
-    var SingleEntityException = entitas.SingleEntityException;
-    var Group = (function () {
-        function Group(matcher) {
-            this._entities = {};
-            this.onEntityAdded = new Signal(this);
-            this.onEntityRemoved = new Signal(this);
-            this.onEntityUpdated = new Signal(this);
-            this._matcher = matcher;
-        }
-        Object.defineProperty(Group.prototype, "count", {
-            get: function () { return Object.keys(this._entities).length; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Group.prototype, "matcher", {
-            get: function () { return this._matcher; },
-            enumerable: true,
-            configurable: true
-        });
-        Group.prototype.handleEntitySilently = function (entity) {
-            if (this._matcher.matches(entity)) {
-                this.addEntitySilently(entity);
-            }
-            else {
-                this.removeEntitySilently(entity);
-            }
-        };
-        Group.prototype.handleEntity = function (entity, index, component) {
-            if (this._matcher.matches(entity)) {
-                this.addEntity(entity, index, component);
-            }
-            else {
-                this.removeEntity(entity, index, component);
-            }
-        };
-        Group.prototype.updateEntity = function (entity, index, previousComponent, newComponent) {
-            if (entity.creationIndex in this._entities) {
-                this.onEntityRemoved.dispatch(this, entity, index, previousComponent);
-                this.onEntityAdded.dispatch(this, entity, index, newComponent);
-                this.onEntityUpdated.dispatch(this, entity, index, previousComponent, newComponent);
-            }
-        };
-        Group.prototype.addEntitySilently = function (entity) {
-            if (!(entity.creationIndex in this._entities)) {
-                this._entities[entity.creationIndex] = entity;
-                this._entitiesCache = undefined;
-                this._singleEntityCache = undefined;
-                entity.addRef();
-            }
-        };
-        Group.prototype.addEntity = function (entity, index, component) {
-            if (!(entity.creationIndex in this._entities)) {
-                this._entities[entity.creationIndex] = entity;
-                this._entitiesCache = undefined;
-                this._singleEntityCache = undefined;
-                entity.addRef();
-                this.onEntityAdded.dispatch(this, entity, index, component);
-            }
-        };
-        Group.prototype.removeEntitySilently = function (entity) {
-            if (entity.creationIndex in this._entities) {
-                delete this._entities[entity.creationIndex];
-                this._entitiesCache = undefined;
-                this._singleEntityCache = undefined;
-                entity.release();
-            }
-        };
-        Group.prototype.removeEntity = function (entity, index, component) {
-            if (entity.creationIndex in this._entities) {
-                delete this._entities[entity.creationIndex];
-                this._entitiesCache = undefined;
-                this._singleEntityCache = undefined;
-                this.onEntityRemoved.dispatch(this, entity, index, component);
-                entity.release();
-            }
-        };
-        Group.prototype.containsEntity = function (entity) {
-            return entity.creationIndex in this._entities;
-        };
-        Group.prototype.getEntities = function () {
-            if (this._entitiesCache === undefined) {
-                this._entitiesCache = [];
-                for (var k in this._entities) {
-                    this._entitiesCache.push(this._entities[k]);
-                }
-            }
-            return this._entitiesCache;
-        };
-        Group.prototype.getSingleEntity = function () {
-            if (this._singleEntityCache === undefined) {
-                var enumerator = Object.keys(this._entities);
-                var c = enumerator.length;
-                if (c === 1) {
-                    this._singleEntityCache = this._entities[enumerator[0]];
-                }
-                else if (c === 0) {
-                    return undefined;
+                else if (parseInt(start) === parseFloat(start) && parseInt(end) === parseFloat(end)) {
+                    return start + Rnd.nextInt(end - start + 1);
                 }
                 else {
-                    throw new SingleEntityException(this._matcher);
-                }
-            }
-            return this._singleEntityCache;
-        };
-        Group.prototype.toString = function () {
-            if (this._toStringCache === undefined) {
-                this._toStringCache = "Group(" + this._matcher + ")";
-            }
-            return this._toStringCache;
-        };
-        return Group;
-    })();
-    entitas.Group = Group;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=Group.js.map
-var entitas;
-(function (entitas) {
-    var GroupObserverException = entitas.GroupObserverException;
-    (function (GroupEventType) {
-        GroupEventType[GroupEventType["OnEntityAdded"] = 0] = "OnEntityAdded";
-        GroupEventType[GroupEventType["OnEntityRemoved"] = 1] = "OnEntityRemoved";
-        GroupEventType[GroupEventType["OnEntityAddedOrRemoved"] = 2] = "OnEntityAddedOrRemoved";
-    })(entitas.GroupEventType || (entitas.GroupEventType = {}));
-    var GroupEventType = entitas.GroupEventType;
-    var GroupObserver = (function () {
-        function GroupObserver(groups, eventTypes) {
-            var _this = this;
-            this._collectedEntities = {};
-            this.addEntity = function (group, entity, index, component) {
-                if (!(entity.creationIndex in _this._collectedEntities)) {
-                    _this._collectedEntities[entity.creationIndex] = entity;
-                    entity.addRef();
+                    return start + Rnd.nextDouble() * (end - start);
                 }
             };
-            this._groups = Array.isArray(groups) ? groups : [groups];
-            this._eventTypes = Array.isArray(eventTypes) ? eventTypes : [eventTypes];
-            if (groups.length !== eventTypes.length) {
-                throw new GroupObserverException("Unbalanced count with groups (" + groups.length +
-                    ") and event types (" + eventTypes.length + ")");
+            return Rnd;
+        })();
+        utils.Rnd = Rnd;
+    })(utils = bosco.utils || (bosco.utils = {}));
+})(bosco || (bosco = {}));
+//# sourceMappingURL=Rnd.js.map
+var bosco;
+(function (bosco) {
+    var utils;
+    (function (utils) {
+        // Thanks to Riven
+        // From: http://riven8192.blogspot.com/2009/08/fastmath-sincos-lookup-tables.html
+        var TrigLUT = (function () {
+            function TrigLUT() {
             }
-            this._collectedEntities = {};
-            this._addEntityCache = this.addEntity;
-            this.activate();
+            TrigLUT.sin = function (rad) {
+                return TrigLUT.sin_[(rad * TrigLUT.radToIndex) & TrigLUT.SIN_MASK];
+            };
+            TrigLUT.cos = function (rad) {
+                return TrigLUT.cos_[(rad * TrigLUT.radToIndex) & TrigLUT.SIN_MASK];
+            };
+            TrigLUT.sinDeg = function (deg) {
+                return TrigLUT.sin_[(deg * TrigLUT.degToIndex) & TrigLUT.SIN_MASK];
+            };
+            TrigLUT.cosDeg = function (deg) {
+                return TrigLUT.cos_[(deg * TrigLUT.degToIndex) & TrigLUT.SIN_MASK];
+            };
+            TrigLUT.init = function (update) {
+                TrigLUT.RAD = Math.PI / 180.0;
+                TrigLUT.DEG = 180.0 / Math.PI;
+                TrigLUT.SIN_BITS = 12;
+                TrigLUT.SIN_MASK = ~(-1 << TrigLUT.SIN_BITS);
+                TrigLUT.SIN_COUNT = TrigLUT.SIN_MASK + 1;
+                TrigLUT.radFull = (Math.PI * 2.0);
+                TrigLUT.degFull = (360.0);
+                TrigLUT.radToIndex = TrigLUT.SIN_COUNT / TrigLUT.radFull;
+                TrigLUT.degToIndex = TrigLUT.SIN_COUNT / TrigLUT.degFull;
+                TrigLUT.sin_ = new Array(TrigLUT.SIN_COUNT);
+                TrigLUT.cos_ = new Array(TrigLUT.SIN_COUNT);
+                for (var i = 0; i < TrigLUT.SIN_COUNT; i++) {
+                    TrigLUT.sin_[i] = Math.sin((i + 0.5) / TrigLUT.SIN_COUNT * TrigLUT.radFull);
+                    TrigLUT.cos_[i] = Math.cos((i + 0.5) / TrigLUT.SIN_COUNT * TrigLUT.radFull);
+                }
+                if (update) {
+                    Math.sin = TrigLUT.sin;
+                    Math.cos = TrigLUT.cos;
+                }
+            };
+            return TrigLUT;
+        })();
+        utils.TrigLUT = TrigLUT;
+    })(utils = bosco.utils || (bosco.utils = {}));
+})(bosco || (bosco = {}));
+//# sourceMappingURL=TrigLUT.js.map
+/**
+ * Utils.ts
+ *
+ * Bosco Utility functions
+ *
+ */
+var bosco;
+(function (bosco) {
+    var Sprite = PIXI.Sprite;
+    var Texture = PIXI.Texture;
+    /**
+     * Builds a composited sprite
+     *
+     * @param name  resource name
+     * @returns {PIXI.Sprite}
+     */
+    function prefab(name) {
+        var config = bosco.config.resources[name];
+        if (Array.isArray(config)) {
+            var container = new Sprite();
+            for (var i = 0, l = config.length; i < l; i++) {
+                container.addChild(prefab(config[i]));
+            }
+            return container;
         }
-        Object.defineProperty(GroupObserver.prototype, "collectedEntities", {
-            get: function () { return this._collectedEntities; },
-            enumerable: true,
-            configurable: true
-        });
-        GroupObserver.prototype.activate = function () {
-            for (var i = 0, groupsLength = this._groups.length; i < groupsLength; i++) {
-                var group = this._groups[i];
-                var eventType = this._eventTypes[i];
-                if (eventType === GroupEventType.OnEntityAdded) {
-                    group.onEntityAdded.remove(this._addEntityCache);
-                    group.onEntityAdded.add(this._addEntityCache);
-                }
-                else if (eventType === GroupEventType.OnEntityRemoved) {
-                    group.onEntityRemoved.remove(this._addEntityCache);
-                    group.onEntityRemoved.add(this._addEntityCache);
-                }
-                else if (eventType === GroupEventType.OnEntityAddedOrRemoved) {
-                    group.onEntityAdded.remove(this._addEntityCache);
-                    group.onEntityAdded.add(this._addEntityCache);
-                    group.onEntityRemoved.remove(this._addEntityCache);
-                    group.onEntityRemoved.add(this._addEntityCache);
-                }
-                else {
-                    throw "Invalid eventType [" + typeof eventType + ":" + eventType + "] in GroupObserver::activate";
+        else {
+            var sprite = new Sprite(Texture.fromFrame(config.path));
+            for (var k in config) {
+                switch (k) {
+                    case 'anchor':
+                        sprite.anchor.set(config.anchor.x, config.anchor.y);
+                        break;
+                    case 'scale':
+                        sprite.scale.set(config.scale.x, config.scale.y);
+                        break;
+                    case 'position':
+                        sprite.position.set(config.position.x, config.position.y);
+                        break;
+                    case 'rotation':
+                        sprite.rotation = config.rotation.z;
+                        break;
+                    case 'tint':
+                        sprite.tint = config.tint;
+                        break;
                 }
             }
-        };
-        GroupObserver.prototype.deactivate = function () {
-            var e;
-            for (var i = 0, groupsLength = this._groups.length; i < groupsLength; i++) {
-                var group = this._groups[i];
-                group.onEntityAdded.remove(this._addEntityCache);
-                group.onEntityRemoved.remove(this._addEntityCache);
-                this.clearCollectedEntities();
-            }
-        };
-        GroupObserver.prototype.clearCollectedEntities = function () {
-            for (var e in this._collectedEntities) {
-                this._collectedEntities[e].release();
-            }
-            this._collectedEntities = {};
-        };
-        return GroupObserver;
-    })();
-    entitas.GroupObserver = GroupObserver;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=GroupObserver.js.map
-var entitas;
-(function (entitas) {
-    var Group = entitas.Group;
-    var Entity = entitas.Entity;
-    var EntityIsNotDestroyedException = entitas.EntityIsNotDestroyedException;
-    var PoolDoesNotContainEntityException = entitas.PoolDoesNotContainEntityException;
-    var Pool = (function () {
-        function Pool(components, totalComponents, startCreationIndex) {
-            var _this = this;
-            if (startCreationIndex === void 0) { startCreationIndex = 0; }
-            this._entities = {};
-            this._groups = {};
-            this._reusableEntities = [];
-            this._retainedEntities = {};
-            this._totalComponents = 0;
-            this._creationIndex = 0;
-            this.updateGroupsComponentAddedOrRemoved = function (entity, index, component) {
-                var groups = _this._groupsForIndex[index];
-                if (groups !== undefined) {
-                    for (var i = 0, groupsCount = groups.length; i < groupsCount; i++) {
-                        groups[i].handleEntity(entity, index, component);
-                    }
-                }
-            };
-            this.updateGroupsComponentReplaced = function (entity, index, previousComponent, newComponent) {
-                var groups = _this._groupsForIndex[index];
-                if (groups !== undefined) {
-                    for (var i = 0, groupsCount = groups.length; i < groupsCount; i++) {
-                        groups[i].updateEntity(entity, index, previousComponent, newComponent);
-                    }
-                }
-            };
-            this.onEntityReleased = function (entity) {
-                if (entity._isEnabled) {
-                    throw new EntityIsNotDestroyedException("Cannot release entity.");
-                }
-                entity.onEntityReleased.remove(_this._cachedOnEntityReleased);
-                delete _this._retainedEntities[entity.creationIndex];
-                _this._reusableEntities.push(entity);
-            };
-            this.onGroupCreated = new entitas.Signal(this);
-            this.onEntityCreated = new entitas.Signal(this);
-            this.onEntityDestroyed = new entitas.Signal(this);
-            this.onEntityWillBeDestroyed = new entitas.Signal(this);
-            this._componentsEnum = components;
-            this._totalComponents = totalComponents;
-            this._creationIndex = startCreationIndex;
-            this._groupsForIndex = [];
-            this._cachedUpdateGroupsComponentAddedOrRemoved = this.updateGroupsComponentAddedOrRemoved;
-            this._cachedUpdateGroupsComponentReplaced = this.updateGroupsComponentReplaced;
-            this._cachedOnEntityReleased = this.onEntityReleased;
-            Pool.componentsEnum = components;
-            Pool.totalComponents = totalComponents;
+            return sprite;
         }
-        Object.defineProperty(Pool.prototype, "totalComponents", {
-            get: function () { return this._totalComponents; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Pool.prototype, "count", {
-            get: function () { return Object.keys(this._entities).length; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Pool.prototype, "reusableEntitiesCount", {
-            get: function () { return this._reusableEntities.length; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Pool.prototype, "retainedEntitiesCount", {
-            get: function () { return Object.keys(this._retainedEntities).length; },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * groupDesc
-         *
-         * expand out the group tostring for better debug info
-         *
-         * @param group
-         * @returns {string}
-         */
-        Pool.groupDesc = function (group) {
-            var s = group.toString();
-            for (var c = Pool.totalComponents; c > -1; c--) {
-                s = s.replace('' + c, Pool.componentsEnum[c]);
+    }
+    bosco.prefab = prefab;
+})(bosco || (bosco = {}));
+//# sourceMappingURL=Utils.js.map
+/**
+ * Properties.ts
+ *
+ * Persist properties using LocalStorage
+ *
+ */
+var bosco;
+(function (bosco) {
+    var Properties = (function () {
+        function Properties() {
+        }
+        Properties.init = function (name, properties) {
+            if (Properties.db !== null)
+                return;
+            /** Initialize the db with the properties */
+            function initializeDb(db) {
+                if (db.isNew()) {
+                    db.createTable("settings", ["name", "value"]);
+                    db.createTable("leaderboard", ["date", "score"]);
+                    for (var key in properties) {
+                        if (properties.hasOwnProperty(key)) {
+                            db.insert("settings", {
+                                name: key,
+                                value: properties[key]
+                            });
+                        }
+                    }
+                    db.commit();
+                }
             }
-            return s;
-        };
-        /**
-         *
-         * @param name
-         */
-        Pool.prototype.createEntity = function (name) {
-            var entity = this._reusableEntities.length > 0 ? this._reusableEntities.pop() : new Entity(this._totalComponents);
-            entity._isEnabled = true;
-            entity.name = name;
-            entity._creationIndex = this._creationIndex++;
-            entity.addRef();
-            this._entities[entity.creationIndex] = entity;
-            this._entitiesCache = undefined;
-            entity.onComponentAdded.add(this._cachedUpdateGroupsComponentAddedOrRemoved);
-            entity.onComponentRemoved.add(this._cachedUpdateGroupsComponentAddedOrRemoved);
-            entity.onComponentReplaced.add(this._cachedUpdateGroupsComponentReplaced);
-            entity.onEntityReleased.add(this._cachedOnEntityReleased);
-            this.onEntityCreated.dispatch(this, entity);
-            return entity;
-        };
-        /**
-         *
-         * @param entity
-         */
-        Pool.prototype.destroyEntity = function (entity) {
-            if (!(entity.creationIndex in this._entities)) {
-                throw new PoolDoesNotContainEntityException(entity, "Could not destroy entity!");
-            }
-            delete this._entities[entity.creationIndex];
-            this._entitiesCache = undefined;
-            this.onEntityWillBeDestroyed.dispatch(this, entity);
-            entity.destroy();
-            this.onEntityDestroyed.dispatch(this, entity);
-            if (entity._refCount === 1) {
-                entity.onEntityReleased.remove(this._cachedOnEntityReleased);
-                this._reusableEntities.push(entity);
+            Properties.dbname = name;
+            Properties.properties = properties;
+            if (window['chrome']) {
+                chromeStorageDB(Properties.dbname, localStorage, function (db) { return initializeDb(Properties.db = db); });
             }
             else {
-                this._retainedEntities[entity.creationIndex] = entity;
-            }
-            entity.release();
-        };
-        Pool.prototype.destroyAllEntities = function () {
-            var entities = this.getEntities();
-            for (var i = 0, entitiesLength = entities.length; i < entitiesLength; i++) {
-                this.destroyEntity(entities[i]);
+                initializeDb(Properties.db = new localStorageDB(Properties.dbname));
             }
         };
-        Pool.prototype.hasEntity = function (entity) {
-            return entity.creationIndex in this._entities;
-        };
-        Pool.prototype.getEntities = function () {
-            if (this._entitiesCache === undefined) {
-                this._entitiesCache = [];
-                for (var k in Object.keys(this._entities)) {
-                    this._entitiesCache.push(this._entities[k]);
+        /*
+         * Get Game Property from local storage
+         *
+         * @param property name
+         * @return property value
+         */
+        Properties.get = function (prop) {
+            return Properties.db.queryAll("settings", {
+                query: {
+                    name: prop
                 }
-            }
-            return this._entitiesCache;
+            })[0].value;
         };
-        //public getEntities(matcher?:IMatcher):Entity[] {
-        //  if (matcher) {
-        //    /** PoolExtension::getEntities */
-        //    return this.getGroup(matcher).getEntities();
-        //  } else {
-        //    if (this._entitiesCache === undefined) {
-        //      this._entitiesCache = [];
-        //      for (var k in Object.keys(this._entities)) {
-        //        this._entitiesCache.push(this._entities[k]);
-        //      }
-        //    }
-        //    return this._entitiesCache;
-        //  }
+        Properties.setScore = function (score) {
+            var today = new Date();
+            var mm = (today.getMonth() + 1).toString();
+            if (mm.length === 1)
+                mm = '0' + mm;
+            var dd = today.getDate().toString();
+            if (dd.length === 1)
+                dd = '0' + dd;
+            var yyyy = today.getFullYear().toString();
+            var yyyymmdd = yyyy + mm + dd;
+            if (0 === Properties.db.queryAll('leaderboard', { query: { date: yyyymmdd } }).length) {
+                Properties.db.insert('leaderboard', { date: yyyymmdd, score: score });
+            }
+            else {
+                Properties.db.update('leaderboard', { date: yyyymmdd }, function (row) {
+                    if (score > row.score) {
+                        row.score = score;
+                    }
+                    return row;
+                });
+            }
+            Properties.db.commit();
+        };
+        Properties.getLeaderboard = function (count) {
+            return Properties.db.queryAll('leaderboard', { limit: count, sort: [['score', 'DESC']] });
+        };
+        Properties.db = null;
+        Properties.dbname = "";
+        Properties.properties = null;
+        /*
+         * Set Game Property in local storage
+         *
+         * @param property name
+         * @param property value
+         * @return nothing
+         */
+        Properties.set = function (prop, value) {
+            Properties.db.update("settings", {
+                name: prop
+            }, function (row) {
+                row.value = "" + value;
+                return row;
+            });
+            Properties.db.commit();
+        };
+        return Properties;
+    })();
+    bosco.Properties = Properties;
+})(bosco || (bosco = {}));
+//# sourceMappingURL=Properties.js.map
+/**
+ * Bosco.ts
+ *
+ * Game Shell
+ *
+ *     __  __         ___                            ___  ___
+ *    / /_/ /  ___   / _ \___ _    _____ ____  ___  / _/ / _ )___  ___ _______
+ *   / __/ _ \/ -_) / ___/ _ \ |/|/ / -_) __/ / _ \/ _/ / _  / _ \(_-</ __/ _ \
+ *   \__/_//_/\__/ /_/   \___/__,__/\__/_/    \___/_/  /____/\___/___/\__/\___/
+ *
+ */
+var bosco;
+(function (bosco) {
+    var Container = PIXI.Container;
+    var Input = bosco.utils.Input;
+    (function (ScaleType) {
+        ScaleType[ScaleType["FILL"] = 0] = "FILL";
+        ScaleType[ScaleType["FIXED"] = 1] = "FIXED"; // scale fixed size to fit the screen
+    })(bosco.ScaleType || (bosco.ScaleType = {}));
+    var ScaleType = bosco.ScaleType;
+    bosco.config;
+    /**
+     * Load assets and start
+     */
+    function start(config) {
+        //if (config.properties) {
+        //  Properties.init(config.namespace, config.properties);
         //}
-        Pool.prototype.getGroup = function (matcher) {
-            var group;
-            if (matcher.id in this._groups) {
-                group = this._groups[matcher.id];
-            }
-            else {
-                group = new Group(matcher);
-                var entities = this.getEntities();
-                for (var i = 0, entitiesLength = entities.length; i < entitiesLength; i++) {
-                    group.handleEntitySilently(entities[i]);
-                }
-                this._groups[matcher.id] = group;
-                for (var i = 0, indicesLength = matcher.indices.length; i < indicesLength; i++) {
-                    var index = matcher.indices[i];
-                    if (this._groupsForIndex[index] === undefined) {
-                        this._groupsForIndex[index] = [];
-                    }
-                    this._groupsForIndex[index].push(group);
-                }
-                this.onGroupCreated.dispatch(this, group);
-            }
-            return group;
-        };
-        Pool.totalComponents = 0;
-        return Pool;
-    })();
-    entitas.Pool = Pool;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=Pool.js.map
-var entitas;
-(function (entitas) {
-    var GroupObserver = entitas.GroupObserver;
-    function as(obj, method1) {
-        return method1 in obj ? obj : null;
-    }
-    var ReactiveSystem = (function () {
-        function ReactiveSystem(pool, subSystem) {
-            var triggers = 'triggers' in subSystem ? subSystem['triggers'] : [subSystem['trigger']];
-            this._subsystem = subSystem;
-            var ensureComponents = as(subSystem, 'ensureComponents');
-            if (ensureComponents != null) {
-                this._ensureComponents = ensureComponents.ensureComponents;
-            }
-            var excludeComponents = as(subSystem, 'excludeComponents');
-            if (excludeComponents != null) {
-                this._excludeComponents = excludeComponents.excludeComponents;
-            }
-            this._clearAfterExecute = as(subSystem, 'clearAfterExecute') != null;
-            var triggersLength = triggers.length;
-            var groups = new Array(triggersLength);
-            var eventTypes = new Array(triggersLength);
-            for (var i = 0; i < triggersLength; i++) {
-                var trigger = triggers[i];
-                groups[i] = pool.getGroup(trigger.trigger);
-                eventTypes[i] = trigger.eventType;
-            }
-            this._observer = new GroupObserver(groups, eventTypes);
-            this._buffer = [];
+        for (var asset in config.assets) {
+            PIXI.loader.add(asset, config.assets[asset]);
         }
-        Object.defineProperty(ReactiveSystem.prototype, "subsystem", {
-            get: function () { return this._subsystem; },
-            enumerable: true,
-            configurable: true
-        });
-        ReactiveSystem.prototype.activate = function () {
-            this._observer.activate();
-        };
-        ReactiveSystem.prototype.deactivate = function () {
-            this._observer.deactivate();
-        };
-        ReactiveSystem.prototype.clear = function () {
-            this._observer.clearCollectedEntities();
-        };
-        ReactiveSystem.prototype.execute = function () {
-            var collectedEntities = this._observer.collectedEntities;
-            var ensureComponents = this._ensureComponents;
-            var excludeComponents = this._excludeComponents;
-            var buffer = this._buffer;
-            if (Object.keys(collectedEntities).length != 0) {
-                if (ensureComponents) {
-                    if (excludeComponents) {
-                        for (var k in collectedEntities) {
-                            var e = collectedEntities[k];
-                            if (ensureComponents.matches(e) && !excludeComponents.matches(e)) {
-                                buffer.push(e.addRef());
-                            }
-                        }
-                    }
-                    else {
-                        for (var k in collectedEntities) {
-                            var e = collectedEntities[k];
-                            if (ensureComponents.matches(e)) {
-                                buffer.push(e.addRef());
-                            }
-                        }
-                    }
-                }
-                else if (excludeComponents) {
-                    for (var k in collectedEntities) {
-                        var e = collectedEntities[k];
-                        if (!excludeComponents.matches(e)) {
-                            buffer.push(e.addRef());
-                        }
-                    }
-                }
-                else {
-                    for (var k in collectedEntities) {
-                        var e = collectedEntities[k];
-                        buffer.push(e.addRef());
-                    }
-                }
-                this._observer.clearCollectedEntities();
-                if (buffer.length != 0) {
-                    this._subsystem.execute(buffer);
-                    for (var i = 0, bufferCount = buffer.length; i < bufferCount; i++) {
-                        buffer[i].release();
-                    }
-                    buffer.length = 0;
-                    if (this._clearAfterExecute) {
-                        this._observer.clearCollectedEntities();
-                    }
-                }
-            }
-        };
-        return ReactiveSystem;
-    })();
-    entitas.ReactiveSystem = ReactiveSystem;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=ReactiveSystem.js.map
-var entitas;
-(function (entitas) {
-    function as(obj, method1) {
-        return method1 in obj ? obj : null;
+        PIXI.loader.load(function (loader, resources) { return new Game(config, resources); });
     }
-    (function (SystemType) {
-        SystemType[SystemType["IInitializeSystem"] = 1] = "IInitializeSystem";
-        SystemType[SystemType["IExecuteSystem"] = 2] = "IExecuteSystem";
-        SystemType[SystemType["IReactiveExecuteSystem"] = 4] = "IReactiveExecuteSystem";
-        SystemType[SystemType["IMultiReactiveSystem"] = 8] = "IMultiReactiveSystem";
-        SystemType[SystemType["IReactiveSystem"] = 16] = "IReactiveSystem";
-        SystemType[SystemType["IEnsureComponents"] = 32] = "IEnsureComponents";
-        SystemType[SystemType["IExcludeComponents"] = 64] = "IExcludeComponents";
-        SystemType[SystemType["IClearReactiveSystem"] = 128] = "IClearReactiveSystem";
-    })(entitas.SystemType || (entitas.SystemType = {}));
-    var SystemType = entitas.SystemType;
-    var Systems = (function () {
-        function Systems() {
-            this._initializeSystems = [];
-            this._executeSystems = [];
+    bosco.start = start;
+    var DummyStats = (function () {
+        function DummyStats() {
+        }
+        DummyStats.prototype.begin = function () { };
+        DummyStats.prototype.end = function () { };
+        return DummyStats;
+    })();
+    var Game = (function () {
+        /**
+         * Create the game instance
+         * @param resources
+         */
+        function Game(config, resources) {
+            var _this = this;
             /**
-             * Load Extensions
+             * Game Loop
+             * @param time
              */
-        }
-        Systems.prototype.add = function (system) {
-            if ('function' === typeof system) {
-                var Klass = system;
-                system = new Klass();
-            }
-            var reactiveSystem = as(system, 'subsystem');
-            var initializeSystem = reactiveSystem != null
-                ? as(reactiveSystem.subsystem, 'initialize')
-                : as(system, 'initialize');
-            if (initializeSystem != null) {
-                this._initializeSystems.push(initializeSystem);
-            }
-            var executeSystem = as(system, 'execute');
-            if (executeSystem != null) {
-                this._executeSystems.push(executeSystem);
-            }
-            return this;
-        };
-        Systems.prototype.initialize = function () {
-            for (var i = 0, initializeSysCount = this._initializeSystems.length; i < initializeSysCount; i++) {
-                this._initializeSystems[i].initialize();
-            }
-        };
-        Systems.prototype.execute = function () {
-            var executeSystems = this._executeSystems;
-            for (var i = 0, exeSysCount = executeSystems.length; i < exeSysCount; i++) {
-                executeSystems[i].execute();
-            }
-        };
-        Systems.prototype.clearReactiveSystems = function () {
-            for (var i = 0, exeSysCount = this._executeSystems.length; i < exeSysCount; i++) {
-                var reactiveSystem = as(this._executeSystems[i], 'subsystem');
-                if (reactiveSystem != null) {
-                    reactiveSystem.clear();
-                }
-                var nestedSystems = as(this._executeSystems[i], 'clearReactiveSystems');
-                if (nestedSystems != null) {
-                    nestedSystems.clearReactiveSystems();
-                }
-            }
-        };
-        return Systems;
-    })();
-    entitas.Systems = Systems;
-})(entitas || (entitas = {}));
-//# sourceMappingURL=Systems.js.map
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var entitas;
-(function (entitas) {
-    var extensions;
-    (function (extensions) {
-        var Exception = entitas.Exception;
-        var Collection = (function (_super) {
-            __extends(Collection, _super);
-            function Collection($0) {
-                _super.call(this, $0);
-            }
-            Collection.prototype.singleEntity = function () {
-                if (this.length !== 1) {
-                    throw new Exception("Expected exactly one entity but found " + this.length);
-                }
-                return this[0];
+            this.update = function (time) { };
+            /**
+             * Resize window
+             */
+            this.resize = function () {
+                var ratio = Math.min(window.innerWidth / _this.config.width, window.innerHeight / _this.config.height);
+                _this.config.scale = ratio;
+                _this.stage.scale.x = _this.stage.scale.y = ratio;
+                _this.renderer.resize(Math.ceil(_this.config.width * ratio), Math.ceil(_this.config.height * ratio));
             };
-            return Collection;
-        })(Array);
-        extensions.Collection = Collection;
-    })(extensions = entitas.extensions || (entitas.extensions = {}));
-})(entitas || (entitas = {}));
-//# sourceMappingURL=CollectionExtension.js.map
-var entitas;
-(function (entitas) {
-    var extensions;
-    (function (extensions) {
-        var GroupEventType = entitas.GroupEventType;
-        var GroupObserver = entitas.GroupObserver;
-        entitas.Group.prototype.createObserver = function (eventType) {
-            if (eventType === void 0) { eventType = GroupEventType.OnEntityAdded; }
-            return new GroupObserver(this, eventType);
-        };
-    })(extensions = entitas.extensions || (entitas.extensions = {}));
-})(entitas || (entitas = {}));
-//# sourceMappingURL=GroupExtension.js.map
-var entitas;
-(function (entitas) {
-    var extensions;
-    (function (extensions) {
-        var Matcher = entitas.Matcher;
-        var GroupEventType = entitas.GroupEventType;
-        var TriggerOnEvent = entitas.TriggerOnEvent;
-        Matcher.prototype.onEntityAdded = function () {
-            return new TriggerOnEvent(this, GroupEventType.OnEntityAdded);
-        };
-        Matcher.prototype.onEntityRemoved = function () {
-            return new TriggerOnEvent(this, GroupEventType.OnEntityRemoved);
-        };
-        Matcher.prototype.onEntityAddedOrRemoved = function () {
-            return new TriggerOnEvent(this, GroupEventType.OnEntityAddedOrRemoved);
-        };
-    })(extensions = entitas.extensions || (entitas.extensions = {}));
-})(entitas || (entitas = {}));
-//# sourceMappingURL=MatcherExtension.js.map
-var entitas;
-(function (entitas) {
-    var extensions;
-    (function (extensions) {
-        function as(obj, method1) {
-            return method1 in obj ? obj : null;
-        }
-        entitas.Pool.prototype.getEntities = function (matcher) {
-            if (matcher) {
-                /** PoolExtension::getEntities */
-                return this.getGroup(matcher).getEntities();
+            console.log('asset', window.devicePixelRatio, config.assets);
+            var controllers = [];
+            var temp;
+            var previousTime;
+            this.config = bosco.config = config;
+            this.resources = resources;
+            var renderer = this.renderer = PIXI.autoDetectRenderer(config.width, config.height, config.options);
+            renderer.view.style.position = 'absolute';
+            renderer.view.style.top = '0px';
+            renderer.view.style.left = '0px';
+            var stage = this.stage = new Container();
+            viewContainer = this.sprites = new Container();
+            foreContainer = this.fore = new Container();
+            this.resize();
+            document.body.appendChild(renderer.view);
+            if (config.stats) {
+                var stats = this.stats = new Stats();
+                stats.setMode(0);
+                stats.domElement.style.position = 'absolute';
+                stats.domElement.style.left = '0px';
+                stats.domElement.style.top = '0px';
+                document.body.appendChild(stats.domElement);
+                /**
+                 *
+                 * @param time
+                 */
+                this.update = function (time) {
+                    stats.begin();
+                    temp = previousTime || time;
+                    previousTime = time;
+                    var delta = (time - temp) * 0.001;
+                    for (var i = 0, l = controllers.length; i < l; i++) {
+                        controllers[i].update(delta);
+                    }
+                    renderer.render(stage);
+                    stats.end();
+                    requestAnimationFrame(_this.update);
+                    Input.update();
+                    TWEEN.update();
+                };
             }
             else {
-                if (this._entitiesCache === undefined) {
-                    this._entitiesCache = [];
-                    for (var k in Object.keys(this._entities)) {
-                        this._entitiesCache.push(this._entities[k]);
+                /**
+                 *
+                 * @param time
+                 */
+                this.update = function (time) {
+                    temp = previousTime || time;
+                    previousTime = time;
+                    var delta = (time - temp) * 0.001;
+                    for (var i = 0, l = controllers.length; i < l; i++) {
+                        controllers[i].update(delta);
                     }
-                }
-                return this._entitiesCache;
+                    renderer.render(stage);
+                    requestAnimationFrame(_this.update);
+                    Input.update();
+                    TWEEN.update();
+                };
             }
-        };
-        entitas.Pool.prototype.createSystem = function (system) {
-            if ('function' === typeof system) {
-                var Klass = system;
-                system = new Klass();
+            window.addEventListener('resize', this.resize, true);
+            window.onorientationchange = this.resize;
+            stage.addChild(this.sprites);
+            stage.addChild(this.fore);
+            for (var _i = 0, _a = config.controllers; _i < _a.length; _i++) {
+                var className = _a[_i];
+                var Class = window[config.namespace][className];
+                controllers.push(new Class());
             }
-            entitas.Pool.setPool(system, this);
-            var reactiveSystem = as(system, 'trigger');
-            if (reactiveSystem != null) {
-                return new entitas.ReactiveSystem(this, reactiveSystem);
+            for (var _b = 0; _b < controllers.length; _b++) {
+                var controller = controllers[_b];
+                controller.start();
             }
-            var multiReactiveSystem = as(system, 'triggers');
-            if (multiReactiveSystem != null) {
-                return new entitas.ReactiveSystem(this, multiReactiveSystem);
-            }
-            return system;
-        };
-        entitas.Pool.setPool = function (system, pool) {
-            var poolSystem = as(system, 'setPool');
-            if (poolSystem != null) {
-                poolSystem.setPool(pool);
-            }
-        };
-    })(extensions = entitas.extensions || (entitas.extensions = {}));
-})(entitas || (entitas = {}));
-//# sourceMappingURL=PoolExtension.js.map
+            requestAnimationFrame(this.update);
+        }
+        return Game;
+    })();
+    bosco.Game = Game;
+})(bosco || (bosco = {}));
+//# sourceMappingURL=Bosco.js.map
 /**
  * Extensions for Match-One
  */
@@ -1982,139 +1271,8 @@ var matchone;
     this.destroyEntity(scoreEntity);
   };
 })();
-/**
- * core/Constants.ts
- *
- * Core Constants for Schmup Warz
- *
- */
 var matchone;
 (function (matchone) {
-    (function (ScaleType) {
-        ScaleType[ScaleType["FILL"] = 0] = "FILL";
-        ScaleType[ScaleType["FIXED"] = 1] = "FIXED"; // scale fixed size to fit the screen
-    })(matchone.ScaleType || (matchone.ScaleType = {}));
-    var ScaleType = matchone.ScaleType;
-    var Constants = (function () {
-        function Constants() {
-        }
-        Constants.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        Constants.appName = "example";
-        Constants.FRAME_WIDTH = window.innerWidth;
-        Constants.FRAME_HEIGHT = window.innerHeight;
-        Constants.RATIO = window.devicePixelRatio * .6;
-        Constants.SCALE_TYPE = ScaleType.FILL;
-        Constants.options = {
-            backgroundColor: 0x3c3c3c
-        };
-        Constants.assets = {
-            Blocker: 'res/Blocker.png',
-            Piece0: 'res/Piece0.png',
-            Piece1: 'res/Piece1.png',
-            Piece2: 'res/Piece2.png',
-            Piece3: 'res/Piece3.png',
-            Piece4: 'res/Piece4.png',
-            Piece5: 'res/Piece5.png'
-        };
-        /**
-         * Prefab's
-         */
-        Constants.resources = {
-            'Blocker': { path: 'res/Blocker.png', scale: { x: .5, y: .5 } },
-            'Piece0': { path: 'res/Piece0.png', scale: { x: .5, y: .5 } },
-            'Piece1': { path: 'res/Piece1.png', scale: { x: .5, y: .5 } },
-            'Piece2': { path: 'res/Piece2.png', scale: { x: .5, y: .5 } },
-            'Piece3': { path: 'res/Piece3.png', scale: { x: .5, y: .5 } },
-            'Piece4': { path: 'res/Piece4.png', scale: { x: .5, y: .5 } },
-            'Piece5': { path: 'res/Piece5.png', scale: { x: .5, y: .5 } }
-        };
-        return Constants;
-    })();
-    matchone.Constants = Constants;
-})(matchone || (matchone = {}));
-//# sourceMappingURL=Constants.js.map
-var matchone;
-(function (matchone) {
-    var utils;
-    (function (utils) {
-        var Input = (function () {
-            function Input() {
-                var _this = this;
-                this.states = {};
-                this.mouseDown = false;
-                this.mouseButtonDown = false;
-                this.mousePosition = { x: 0, y: 0 };
-                this.isDown = function (keyCode) { return _this.states[keyCode]; };
-                this.isUp = function (keyCode) { return !_this.states[keyCode]; };
-                this.onKeyUp = function (event) {
-                    if (_this.states[event.keyCode])
-                        _this.states[event.keyCode] = false;
-                };
-                this.onKeyDown = function (event) {
-                    _this.states[event.keyCode] = true;
-                };
-                this.onTouchStart = function (event) {
-                    event = event.targetTouches ? event.targetTouches[0] : event;
-                    _this.mouseDown = true;
-                    _this.mouseButtonDown = true;
-                    _this.mousePosition.x = parseInt(event.clientX);
-                    _this.mousePosition.y = parseInt(event.clientY);
-                    return true;
-                };
-                this.onTouchMove = function (event) {
-                    event = event.targetTouches ? event.targetTouches[0] : event;
-                    _this.mousePosition.x = parseInt(event.clientX);
-                    _this.mousePosition.y = parseInt(event.clientY);
-                };
-                this.onTouchEnd = function (event) {
-                    _this.mouseDown = false;
-                    _this.mouseButtonDown = false;
-                };
-                document.addEventListener('touchstart', this.onTouchStart, true);
-                document.addEventListener('touchmove', this.onTouchMove, true);
-                document.addEventListener('touchend', this.onTouchEnd, true);
-                document.addEventListener('mousedown', this.onTouchStart, true);
-                document.addEventListener('mousemove', this.onTouchMove, true);
-                document.addEventListener('mouseup', this.onTouchEnd, true);
-                window.addEventListener('keydown', this.onKeyDown, true);
-                window.addEventListener('keyup', this.onKeyUp, true);
-            }
-            Object.defineProperty(Input, "mousePosition", {
-                get: function () {
-                    return Input._input.mousePosition;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Input.getKeyDown = function (k) {
-                return Input._input.isDown(k.charCodeAt(0));
-            };
-            Input.getKeyUp = function (k) {
-                return Input._input.isUp(k.charCodeAt(0));
-            };
-            Input.getMouseButtonUp = function (m) {
-                return !Input._input.mouseButtonDown;
-            };
-            Input.getMouseButton = function (m) {
-                return Input._input.mouseDown;
-            };
-            Input.getMouseButtonDown = function (m) {
-                return Input._input.mouseButtonDown;
-            };
-            Input.update = function () {
-                Input._input.mouseDown = false;
-                Input._input.states = {};
-            };
-            Input._input = new Input();
-            return Input;
-        })();
-        utils.Input = Input;
-    })(utils = matchone.utils || (matchone.utils = {}));
-})(matchone || (matchone = {}));
-//# sourceMappingURL=Input.js.map
-var matchone;
-(function (matchone) {
-    var Texture = PIXI.Texture;
     var Matcher = entitas.Matcher;
     var AddViewSystem = (function () {
         function AddViewSystem() {
@@ -2129,7 +1287,7 @@ var matchone;
         AddViewSystem.prototype.execute = function (entities) {
             for (var i = 0, l = entities.length; i < l; i++) {
                 var e = entities[i];
-                var sprite = prefab(matchone.Constants.resources[e.resource.name]);
+                var sprite = bosco.prefab(e.resource.name);
                 viewContainer.addChild(sprite);
                 e.addView(sprite);
                 if (e.hasPosition) {
@@ -2141,44 +1299,6 @@ var matchone;
         return AddViewSystem;
     })();
     matchone.AddViewSystem = AddViewSystem;
-    /**
-     * Builds a prefab composite sprite
-     *
-     * @param config
-     * @returns {PIXI.Sprite}
-     */
-    function prefab(config) {
-        if (Array.isArray(config)) {
-            var container = new PIXI.Sprite();
-            for (var i = 0, l = config.length; i < l; i++) {
-                container.addChild(prefab(config[i]));
-            }
-            return container;
-        }
-        else {
-            var sprite = new PIXI.Sprite(Texture.fromFrame(config.path));
-            for (var k in config) {
-                switch (k) {
-                    case 'anchor':
-                        sprite.anchor.set(config.anchor.x, config.anchor.y);
-                        break;
-                    case 'scale':
-                        sprite.scale.set(config.scale.x, config.scale.y);
-                        break;
-                    case 'position':
-                        sprite.position.set(config.position.x, config.position.y);
-                        break;
-                    case 'rotation':
-                        sprite.rotation = config.rotation.z;
-                        break;
-                    case 'tint':
-                        sprite.tint = config.tint;
-                        break;
-                }
-            }
-            return sprite;
-        }
-    }
 })(matchone || (matchone = {}));
 //# sourceMappingURL=AddViewSystem.js.map
 var matchone;
@@ -2487,12 +1607,15 @@ var matchone;
             configurable: true
         });
         RenderPositionSystem.prototype.execute = function (entities) {
+            var scale = bosco.config.scale;
             for (var _i = 0; _i < entities.length; _i++) {
                 var e = entities[_i];
                 var pos = e.position;
-                var x = 64 + pos.x * 64;
-                var y = 640 - (64 + pos.y * 64);
-                e.view.sprite.position.set(x, y);
+                var w = e.view.sprite.width;
+                var x = w + pos.x * w;
+                var y = (w * 10) - (w + pos.y * w);
+                var tween = new TWEEN.Tween(e.view.sprite.position);
+                tween.to({ x: x, y: y }, 300).start();
             }
         };
         return RenderPositionSystem;
@@ -2531,7 +1654,6 @@ var matchone;
 //# sourceMappingURL=ScoreSystem.js.map
 var matchone;
 (function (matchone) {
-    var Texture = PIXI.Texture;
     var Matcher = entitas.Matcher;
     var AddViewSystem = (function () {
         function AddViewSystem() {
@@ -2546,7 +1668,7 @@ var matchone;
         AddViewSystem.prototype.execute = function (entities) {
             for (var i = 0, l = entities.length; i < l; i++) {
                 var e = entities[i];
-                var sprite = prefab(matchone.Constants.resources[e.resource.name]);
+                var sprite = bosco.prefab(e.resource.name);
                 viewContainer.addChild(sprite);
                 e.addView(sprite);
                 if (e.hasPosition) {
@@ -2558,44 +1680,6 @@ var matchone;
         return AddViewSystem;
     })();
     matchone.AddViewSystem = AddViewSystem;
-    /**
-     * Builds a prefab composite sprite
-     *
-     * @param config
-     * @returns {PIXI.Sprite}
-     */
-    function prefab(config) {
-        if (Array.isArray(config)) {
-            var container = new PIXI.Sprite();
-            for (var i = 0, l = config.length; i < l; i++) {
-                container.addChild(prefab(config[i]));
-            }
-            return container;
-        }
-        else {
-            var sprite = new PIXI.Sprite(Texture.fromFrame(config.path));
-            for (var k in config) {
-                switch (k) {
-                    case 'anchor':
-                        sprite.anchor.set(config.anchor.x, config.anchor.y);
-                        break;
-                    case 'scale':
-                        sprite.scale.set(config.scale.x, config.scale.y);
-                        break;
-                    case 'position':
-                        sprite.position.set(config.position.x, config.position.y);
-                        break;
-                    case 'rotation':
-                        sprite.rotation = config.rotation.z;
-                        break;
-                    case 'tint':
-                        sprite.tint = config.tint;
-                        break;
-                }
-            }
-            return sprite;
-        }
-    }
 })(matchone || (matchone = {}));
 //# sourceMappingURL=AddViewSystem.js.map
 var matchone;
@@ -2669,7 +1753,7 @@ var matchone;
 //# sourceMappingURL=GameController.js.map
 var matchone;
 (function (matchone) {
-    var Input = matchone.utils.Input;
+    var Input = bosco.utils.Input;
     var InputController = (function () {
         function InputController() {
         }
@@ -2683,12 +1767,15 @@ var matchone;
                 ? Input.getMouseButtonDown(0)
                 : Input.getMouseButton(0);
             if (input) {
+                var scale = bosco.config.scale;
                 var pos = Input.mousePosition;
                 var children = viewContainer.children;
                 for (var i = 0, l = children.length; i < l; i++) {
-                    if (children[i].containsPoint(pos)) {
-                        var x = ~~((pos.x - 64) / 64);
-                        var y = 8 - (~~((pos.y - 64) / 64));
+                    var child = children[i];
+                    if (child.containsPoint(pos)) {
+                        var w = ~~(child.width * scale);
+                        var x = ~~((pos.x - w) / w);
+                        var y = 8 - (~~((pos.y - w) / w));
                         matchone.Pools.pool.createEntity()
                             .addInput(x, y);
                     }
@@ -2710,8 +1797,8 @@ var matchone;
         }
         ScoreLabelController.prototype.start = function () {
             var _this = this;
-            this.label = new Text('Score', { font: 'bold 40px Arial', fill: 'white' });
-            this.label.position.set((9 * 64 - this.label.width) / 2, 10);
+            this.label = new Text('Score', { font: 'bold 50px Arial', fill: 'white' });
+            this.label.position.set((bosco.config.width - this.label.width) / 2, 10);
             viewContainer.addChild(this.label);
             var pool = Pools.pool;
             pool.getGroup(Matcher.Score).onEntityAdded.add(function (group, entity, index, component) {
@@ -2730,107 +1817,53 @@ var matchone;
 })(matchone || (matchone = {}));
 //# sourceMappingURL=ScoreLabelController.js.map
 /**
- * core/Game.ts
  *
- * Top level application object
+ *     __  __         ___                            ___  ___
+ *    / /_/ /  ___   / _ \___ _    _____ ____  ___  / _/ / _ )___  ___ _______
+ *   / __/ _ \/ -_) / ___/ _ \ |/|/ / -_) __/ / _ \/ _/ / _  / _ \(_-</ __/ _ \
+ *   \__/_//_/\__/ /_/   \___/__,__/\__/_/    \___/_/  /____/\___/___/\__/\___/
+ *
+ *
  *
  */
-var matchone;
-(function (matchone) {
-    var Container = PIXI.Container;
-    var Input = matchone.utils.Input;
-    var Constants = matchone.Constants;
-    var GameController = matchone.GameController;
-    var InputController = matchone.InputController;
-    var ScoreLabelController = matchone.ScoreLabelController;
-    var Game = (function () {
-        /**
-         * Create the game instance
-         * @param resources
-         */
-        function Game(resources) {
-            var _this = this;
-            /**
-             * Game Loop
-             * @param time
-             */
-            this.update = function (time) {
-                _this.stats.begin();
-                _this.delta = _this.previousTime || time;
-                _this.previousTime = time;
-                var delta = (time - _this.delta) * 0.001;
-                _this.game.update(delta);
-                _this.input.update(delta);
-                _this.scoreLabel.update(delta);
-                _this.renderer.render(_this.stage);
-                _this.stats.end();
-                requestAnimationFrame(_this.update);
-                Input.update();
-            };
-            /**
-             * Resize window
-             */
-            this.resize = function () {
-                switch (Constants.SCALE_TYPE) {
-                    case matchone.ScaleType.FILL:
-                        var height = window.innerHeight;
-                        var width = window.innerWidth;
-                        _this.renderer.resize(width, height);
-                        break;
-                    case matchone.ScaleType.FIXED:
-                        _this.renderer.view.style.width = window.innerWidth + 'px';
-                        _this.renderer.view.style.height = window.innerHeight + 'px';
-                        break;
-                }
-            };
-            var stats = this.stats = new Stats();
-            stats.setMode(0);
-            stats.domElement.style.position = 'absolute';
-            stats.domElement.style.left = '0px';
-            stats.domElement.style.top = '0px';
-            this.stage = new Container();
-            viewContainer = this.sprites = new Container();
-            foreContainer = this.fore = new Container();
-            var renderer = this.renderer = PIXI.autoDetectRenderer(Constants.FRAME_WIDTH, Constants.FRAME_HEIGHT, Constants.options);
-            switch (Constants.SCALE_TYPE) {
-                case matchone.ScaleType.FILL:
-                    this.renderer.view.style.position = 'absolute';
-                    break;
-                case matchone.ScaleType.FIXED:
-                    renderer.view.style.position = 'absolute';
-                    renderer.view.style.width = window.innerWidth + 'px';
-                    renderer.view.style.height = window.innerHeight + 'px';
-                    renderer.view.style.display = 'block';
-                    break;
-            }
-            document.body.appendChild(renderer.view);
-            document.body.appendChild(stats.domElement);
-            window.addEventListener('resize', this.resize, true);
-            window.onorientationchange = this.resize;
-            this.stage.addChild(this.sprites);
-            this.stage.addChild(this.fore);
-            this.game = new GameController();
-            this.game.start();
-            this.input = new InputController();
-            this.input.start();
-            this.scoreLabel = new ScoreLabelController();
-            this.scoreLabel.start();
-            requestAnimationFrame(this.update);
-        }
-        /**
-         * Load assets and start
-         */
-        Game.main = function () {
-            for (var asset in Constants.assets) {
-                PIXI.loader.add(asset, Constants.assets[asset]);
-            }
-            PIXI.loader.load(function (loader, resources) { return new Game(resources); });
-        };
-        return Game;
-    })();
-    matchone.Game = Game;
-})(matchone || (matchone = {}));
-//# sourceMappingURL=Game.js.map
-console.log('matchone', matchone);
-matchone.Game.main();
+bosco.start({
+    "namespace": "matchone",
+    "width": 640,
+    "height": 640,
+    "scale": false,
+    "scaleType": "FILL",
+    "stats": true,
+    "storage": false,
+    "options": {
+        "antialiasing": false,
+        "transparent": false,
+        "resolution": window.devicePixelRatio,
+        "autoResize": true, "backgroundColor": "0x3c3c3c"
+    },
+    "assets": {
+        "images": (window.devicePixelRatio >= 2) ? "res/images@2x.json" : "res/images.json"
+    },
+    "resources": {
+        "Blocker" : {"path": "Blocker.png"},
+        "Piece0"  : {"path": "Piece0.png"},
+        "Piece1"  : {"path": "Piece1.png"},
+        "Piece2"  : {"path": "Piece2.png"},
+        "Piece3"  : {"path": "Piece3.png"},
+        "Piece4"  : {"path": "Piece4.png"},
+        "Piece5"  : {"path": "Piece5.png"}
+    },
+    "controllers": [
+        "GameController",
+        "InputController",
+        "ScoreLabelController"
+    ],
+    "properties": {
+        "skip": "false",
+        "leaderboard": "off",
+        "player": "",
+        "userId": "",
+        "playMusic": "true",
+        "playSfx": "true"
+    }
+});
 

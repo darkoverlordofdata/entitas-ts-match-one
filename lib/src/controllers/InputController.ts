@@ -21,12 +21,15 @@ module matchone {
         : Input.getMouseButton(0);
 
       if (input) {
+        var scale = bosco.config.scale;
         var pos = Input.mousePosition;
         var children = viewContainer.children;
         for (var i=0, l=children.length; i<l; i++) {
-          if (children[i].containsPoint(pos)) {
-            var x = ~~((pos.x-64)/64);
-            var y = 8-(~~((pos.y-64)/64));
+          var child =children[i];
+          if (child.containsPoint(pos)) {
+            var w = ~~(child.width * scale);
+            var x = ~~((pos.x-w)/w);
+            var y = 8-(~~((pos.y-w)/w));
             Pools.pool.createEntity()
               .addInput(x, y);
           }
