@@ -20,7 +20,8 @@ bosco.start({
         "antialiasing": false,
         "transparent": false,
         "resolution": window.devicePixelRatio,
-        "autoResize": true, "backgroundColor": "0x3c3c3c"
+        "autoResize": true,
+        "backgroundColor": "0x3c3c3c"
     },
     "assets": {
         "images": (window.devicePixelRatio >= 2) ? "res/images@2x.json" : "res/images.json"
@@ -34,11 +35,13 @@ bosco.start({
         "Piece4"  : {"path": "Piece4.png"},
         "Piece5"  : {"path": "Piece5.png"}
     },
-    "controllers": [
-        "GameController",
-        "InputController",
-        "ScoreLabelController"
-    ],
+    "controllers": {
+        main: [
+            "GameController",
+            "InputController",
+            "ScoreLabelController"
+        ]
+    },
     "properties": {
         "skip": "false",
         "leaderboard": "off",

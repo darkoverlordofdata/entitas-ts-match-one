@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Schmup Wars</title>
+    <title>Match-One (Entitas Demo)</title>
     <link rel="icon" type="image/GIF" href="res/favicon64.png"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="full-screen" content="yes"/>
@@ -32,12 +32,12 @@
             -moz-background-size: cover;
             -o-background-size: cover;
             background-size: cover;
-            background-image:url(res/logo.png);
+            /*background-image:url(res/logo.png);*/
         }
         body {
             padding:0;
             margin: 0;
-            background: #000;
+            background: #3c3c3c;
             overflow: hidden;
         }
         body, canvas, div {
@@ -50,10 +50,13 @@
     </style>
 </head>
 <body></body>
+<script src='dat.gui.min.js'></script>
 <script src="src/stats.js/stats.min.js"></script>
 <script src="src/pixi.js/pixi.min.js"></script>
 <script src="src/tween.ts/tween.min.js"></script>
-<script src="src/entitas/entitas.min.js"></script>
+<script src="src/entitas/entitas.js"></script>
+<script src="src/localstoragedb/localstoragedb.min.js"></script>
+<script src="src/chromestoragedb/chromestoragedb.js"></script>
 <script src="src/bosco/bosco.js"></script>
 
 <script src="src/matchone/extensions/Pool.js"></script>

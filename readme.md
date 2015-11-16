@@ -2,9 +2,9 @@
 
 A recreation of the example athttps://github.com/sschmid/Match-One
 
-created using entitas-ts cli st the starting point:
+created using entitas-ts cli as the starting point:
 
-git clone https://github.com/darkoverlordofdata/template matchone
+    git clone https://github.com/darkoverlordofdata/template matchone
     cd matchone
     
     entitas init matchone
@@ -15,7 +15,7 @@ git clone https://github.com/darkoverlordofdata/template matchone
     entitas create -c GameBoardCache grid
     entitas create -c GameBoard columns:number row:number
     entitas create -c GameBoardElement
-    entitas create -c Input  x:number y:number
+    entitas create -c Input x:number y:number
     entitas create -c Interactive
     entitas create -c Resource name:string
     entitas create -c View sprite

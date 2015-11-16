@@ -23,9 +23,12 @@ module matchone {
   export class FillSystem implements IReactiveSystem, ISetPool {
 
     protected pool:Pool;
-
     public get trigger():TriggerOnEvent {
       return Matcher.GameBoardElement.onEntityRemoved();
+    }
+    
+    public setPool(pool:Pool) {
+      this.pool = pool;
     }
     
     public execute(entities:Array<Entity>) {
@@ -40,12 +43,5 @@ module matchone {
         }
       }
     }
-    
-    public setPool(pool:Pool) {
-      this.pool = pool;
-    }
-    
-
-
   }
 }

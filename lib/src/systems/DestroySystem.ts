@@ -11,9 +11,12 @@ module matchone {
 
   export class DestroySystem implements IReactiveSystem, ISetPool {
     protected pool:Pool;
-
     public get trigger():TriggerOnEvent {
       return Matcher.Destroy.onEntityAdded();
+    }
+
+    public setPool(pool:Pool) {
+      this.pool = pool;
     }
 
     /**
@@ -26,8 +29,5 @@ module matchone {
       }
     }
 
-    public setPool(pool:Pool) {
-      this.pool = pool;
-    }
   }
 }

@@ -2,9 +2,13 @@
   "namespace": "matchone",
   "src": "lib/src",
   "output": {
-    "javascript": "generatedExtensions.js",
-    "typescript": "generatedComponents.ts",
-    "declaration": "entitas-matchone.d.ts"
+    "javascript": "web/src/matchone/generatedExtensions.js",
+    "typescript": "lib/src/generatedComponents.ts",
+    "declaration": "lib/ext/matchone.d.ts"
+  },
+  "alloc": {
+    "entities": 200,
+    "components": 128
   },
   "components": {
     "Movable": false,
@@ -30,7 +34,7 @@
       "name:string"
     ],
     "View": [
-      "sprite:Object"
+      "sprite:any"
     ],
     "Score": [
       "value:number"

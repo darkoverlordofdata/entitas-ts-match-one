@@ -1,7 +1,5 @@
 module matchone {
 
-  declare var viewContainer;
-
   import Pool = entitas.Pool;
   import Group = entitas.Group;
   import Entity = entitas.Entity;
@@ -16,17 +14,9 @@ module matchone {
 
   export class RemoveViewSystem implements IReactiveSystem, ISetPool, IEnsureComponents {
     protected pool:Pool;
-
     public get trigger():TriggerOnEvent {
       return Matcher.Resource.onEntityRemoved();
     }
-
-    public execute(entities:Array<Entity>) {
-      for (var e of entities) {
-        e.removeView();
-      }
-    }
-
     public get ensureComponents():IMatcher {
       return Matcher.View;
     }
@@ -35,8 +25,14 @@ module matchone {
       pool.getGroup(Matcher.View).onEntityRemoved.add(this.onEntityRemoved);
     }
 
+    public execute(entities:Array<Entity>) {
+      for (var e of entities) {
+        e.removeView();
+      }
+    }
+
     protected onEntityRemoved(group:Group, entity:Entity, index:number, component:IComponent) {
-      viewContainer.removeChild((<ViewComponent>component).sprite);
+      bosco.viewContainer.removeChild((<ViewComponent>component).sprite);
 
     }
   }

@@ -1,8 +1,5 @@
 module matchone {
 
-  declare var foreContainer;
-  declare var viewContainer;
-
   import Pools = matchone.Pools;
   import Matcher = entitas.Matcher;
   import Text = PIXI.Text;
@@ -16,7 +13,7 @@ module matchone {
 
       this.label = new Text('Score', {font:'bold 50px Arial', fill:'white'});
       this.label.position.set((bosco.config.width-this.label.width)/2, 10);
-      viewContainer.addChild(this.label);
+      bosco.viewContainer.addChild(this.label);
       var pool = Pools.pool;
       pool.getGroup(Matcher.Score).onEntityAdded.add((group, entity, index, component) => {
         this.updateScore(entity.score.value);
@@ -31,6 +28,5 @@ module matchone {
     updateScore(score:number) {
       this.label.text = 'Score '+score;
     }
-
   }
 }

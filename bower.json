@@ -23,6 +23,8 @@
   },
   "dependencies": {
     "bosco": "git://github.com/darkoverlordofdata/bosco",
+    "chromestoragedb": "git://github.com/darkoverlordofdata/chromeStorageDB",
+    "localstoragedb": "git://github.com/knadh/localStorageDB",
     "entitas": "git://github.com/darkoverlordofdata/entitas-ts",
     "pixi.js": "~3.0.8",
     "stats.js": "*",
@@ -36,7 +38,9 @@
     "path": "web/src",
     "sources": {
       "bosco": "packages/bosco/build/bosco.js",
-      "entitas": "packages/entitas/build/entitas.min.js",
+      "chromestoragedb": "packages/chromestoragedb/chromestoragedb.js",
+      "localstoragedb": "packages/localstoragedb/localstoragedb.min.js",
+      "entitas": "packages/entitas/build/entitas.js",
       "stats.js": "packages/stats.js/build/stats.min.js",
       "pixi.js": "packages/pixi.js/bin/pixi.min.js",
       "tween.ts": "packages/tween.ts/build/tween.min.js"

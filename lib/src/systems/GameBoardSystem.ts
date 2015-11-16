@@ -13,7 +13,15 @@ module matchone {
   export class GameBoardSystem implements IInitializeSystem, IReactiveSystem, ISetPool {
     protected pool:Pool;
     protected gameBoardElements:Group;
+    public get trigger():TriggerOnEvent {
+      return Matcher.GameBoard.onEntityAdded();
+    }
 
+    public setPool(pool:Pool) {
+      this.pool = pool;
+      this.gameBoardElements = pool.getGroup(Matcher.allOf(Matcher.GameBoardElement, Matcher.Position));
+    }
+    
     public initialize() {
       var gameBoard = this.pool.setGameBoard(8, 9).gameBoard;
       for (var row=0; row < gameBoard.rows; row++) {
@@ -26,11 +34,7 @@ module matchone {
         }
       }
     }
-    
-    public get trigger():TriggerOnEvent {
-      return Matcher.GameBoard.onEntityAdded();
-    }
-    
+        
     public execute(entities:Array<Entity>) {
       if (entities.length != 1) {
         throw new Exception("Expected exactly one entity but found " + entities.length);
@@ -42,13 +46,5 @@ module matchone {
         }
       }
     }
-    
-    public setPool(pool:Pool) {
-      this.pool = pool;
-      this.gameBoardElements = pool.getGroup(Matcher.allOf(Matcher.GameBoardElement, Matcher.Position));
-    }
-    
-
-
   }
 }

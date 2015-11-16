@@ -18,6 +18,7 @@ module matchone {
       this.pool = pool;
 
       var gameBoard = pool.getGroup(Matcher.GameBoard);
+      
       gameBoard.onEntityAdded.add((group, entity, index, component) =>
         this.createNewGameBoardCache(<GameBoardComponent>component)
       );

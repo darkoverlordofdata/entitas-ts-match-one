@@ -11,7 +11,7 @@
   },
   "files": [
     "lib/ext/pixi.js.d.ts",
-    "lib/ext/entitas-matchone.d.ts",
+    "lib/ext/matchone.d.ts",
     "lib/ext/Tween.d.ts",
     "lib/ext/bosco.d.ts",
     "lib/src/generatedComponents.ts",

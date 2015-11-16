@@ -1,7 +1,5 @@
 module matchone {
 
-  declare var viewContainer;
-
   import Pool = entitas.Pool;
   import Group = entitas.Group;
   import Entity = entitas.Entity;
@@ -22,7 +20,6 @@ module matchone {
         var e = entities[i];
 
         var sprite = bosco.prefab(e.resource.name);
-        viewContainer.addChild(sprite);
         e.addView(sprite);
 
         if (e.hasPosition) {

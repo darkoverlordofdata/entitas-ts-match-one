@@ -23,11 +23,14 @@ module matchone {
   export class FallSystem implements IReactiveSystem, ISetPool {
 
     protected pool:Pool;
-
     public get trigger():TriggerOnEvent {
       return Matcher.GameBoardElement.onEntityRemoved();
     }
     
+    public setPool(pool:Pool) {
+      this.pool = pool;
+    }
+
     public execute(entities:Array<Entity>) {
       var gameBoard = this.pool.gameBoard;
       var grid = (<GameBoardCacheComponent>this.pool.gameBoardCache).grid;
@@ -49,10 +52,5 @@ module matchone {
         e.replacePosition(column, nextRowPos);
       }
     }
-
-    public setPool(pool:Pool) {
-      this.pool = pool;
-    }
-
   }
 }

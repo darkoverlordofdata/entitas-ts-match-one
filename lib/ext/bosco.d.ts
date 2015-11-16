@@ -1,3 +1,21 @@
+/**
+ * Properties.ts
+ *
+ * Persist properties using LocalStorage
+ *
+ */
+declare module bosco {
+    class Properties {
+        private static db;
+        private static dbname;
+        private static properties;
+        static init(name: any, properties: any): void;
+        static get(prop: any): any;
+        static set: (prop: any, value: any) => void;
+        static setScore(score: any): void;
+        static getLeaderboard(count: any): any;
+    }
+}
 declare module bosco.utils {
     class Input {
         private static _input;
@@ -18,6 +36,7 @@ declare module bosco.utils {
             x: number;
             y: number;
         };
+        isFullScreen: boolean;
         isDown: (keyCode: any) => any;
         isUp: (keyCode: any) => boolean;
         constructor();
@@ -26,6 +45,7 @@ declare module bosco.utils {
         private onTouchStart;
         private onTouchMove;
         private onTouchEnd;
+        private checkFullScreen();
     }
 }
 declare module bosco.utils {
@@ -34,6 +54,25 @@ declare module bosco.utils {
         static nextDouble(): number;
         static nextInt(max: any): number;
         static random(start: any, end?: any): any;
+    }
+}
+declare module bosco.utils {
+    class Timer {
+        private delay;
+        private repeat;
+        private acc;
+        private done;
+        private stopped;
+        constructor(delay: number, repeat?: boolean);
+        update(delta: number): void;
+        reset(): void;
+        isDone(): boolean;
+        isRunning(): boolean;
+        stop(): void;
+        setDelay(delay: number): void;
+        execute: () => void;
+        getPercentageRemaining(): number;
+        getDelay(): number;
     }
 }
 declare module bosco.utils {
@@ -63,32 +102,7 @@ declare module bosco.utils {
  *
  */
 declare module bosco {
-    import Sprite = PIXI.Sprite;
-    /**
-     * Builds a composited sprite
-     *
-     * @param name  resource name
-     * @returns {PIXI.Sprite}
-     */
-    function prefab(name: any): Sprite;
-}
-/**
- * Properties.ts
- *
- * Persist properties using LocalStorage
- *
- */
-declare module bosco {
-    class Properties {
-        private static db;
-        private static dbname;
-        private static properties;
-        static init(name: any, properties: any): void;
-        static get(prop: any): any;
-        static set: (prop: any, value: any) => void;
-        static setScore(score: any): void;
-        static getLeaderboard(count: any): any;
-    }
+    function isMobile(): boolean;
 }
 /**
  * Bosco.ts
@@ -102,25 +116,53 @@ declare module bosco {
  *
  */
 declare module bosco {
+    import Sprite = PIXI.Sprite;
     import Container = PIXI.Container;
     import SystemRenderer = PIXI.SystemRenderer;
-    enum ScaleType {
-        FILL = 0,
-        FIXED = 1,
-    }
+    /** @type PIXI.Container game screen */
+    var viewContainer: Container;
+    /** @type PIXI.Container anything that <b>must</b> be in foreground */
+    var foreContainer: Container;
+    /** @type Object PIXI loader return values */
+    var resources: any;
+    /** @type Object raw configuration hash */
     var config: any;
+    /** @type number time change in ms for current frame */
+    var delta: number;
+    /** @type number frames per second */
+    var fps: number;
+    var world: any;
+    /**
+     * Set the current controller group
+     *
+     * @param name
+     */
+    function controller(name: any): void;
     /**
      * Load assets and start
      */
     function start(config: any): void;
+    /**
+     * Prefab -
+     *
+     * Composite an image
+     * @param name
+     * @param parent
+     * @returns {PIXI.Sprite}
+     */
+    function prefab(name: string, parent?: Container): Sprite;
     class Game {
         stage: Container;
         sprites: Container;
-        fore: Container;
+        foreground: Container;
         renderer: SystemRenderer;
         stats: any;
         config: any;
         resources: any;
+        controllers: any;
+        previousTime: number;
+        private totalFrames;
+        private elapsedTime;
         /**
          * Create the game instance
          * @param resources

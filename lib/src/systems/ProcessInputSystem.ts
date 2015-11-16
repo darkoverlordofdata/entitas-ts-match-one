@@ -11,13 +11,15 @@ module matchone {
   import GameBoardCacheComponent = matchone.GameBoardCacheComponent;
 
   export class ProcessInputSystem implements IReactiveSystem, ISetPool {
-
     protected pool:Pool;
-
     public get trigger():TriggerOnEvent {
       return Matcher.Input.onEntityAdded();
     }
     
+    public setPool(pool:Pool) {
+      this.pool = pool;
+    }
+
     public execute(entities:Array<Entity>) {
       if (entities.length != 1) {
         throw new Exception("Expected exactly one entity but found " + entities.length);
@@ -30,15 +32,6 @@ module matchone {
         e.isDestroy = true;
       }
       this.pool.destroyEntity(inputEntity);
-
-
     }
-    
-    public setPool(pool:Pool) {
-      this.pool = pool;
-    }
-    
-
-
   }
 }
